@@ -1,5 +1,5 @@
-import posthog from "posthog-js";
 import { clientEnv } from "@/env";
+import posthog from "posthog-js";
 
 if (typeof window !== "undefined") {
   if (clientEnv.NEXT_PUBLIC_POSTHOG_KEY && clientEnv.NEXT_PUBLIC_POSTHOG_HOST) {

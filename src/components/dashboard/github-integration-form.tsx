@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { clientEnv } from "@/env";
+import { getBaseUrlClient } from "@/lib/base-url.client";
 import { generateWebhookSecret } from "@/server/actions/github/generate-webhook-secret";
 import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
@@ -131,7 +131,7 @@ export function GitHubIntegrationForm({
     setWebhookSecret(initialData?.webhookSecret || null);
   }, [projectId, initialData, form]);
 
-  const webhookUrl = `${clientEnv.NEXT_PUBLIC_APP_URL}/api/github/webhook`;
+  const webhookUrl = `${getBaseUrlClient()}/api/github/webhook`;
   const selectedRepository = form.watch("repository");
   const [repositoryOwner, repositoryName] = selectedRepository
     ? selectedRepository.split("/")

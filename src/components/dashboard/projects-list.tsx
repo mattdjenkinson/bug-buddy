@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { clientEnv } from "@/env";
+import { getBaseUrlClient } from "@/lib/base-url.client";
 import { Check, Code, Copy } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
@@ -44,7 +44,7 @@ export function ProjectsList({ projects: initialProjects }: ProjectsListProps) {
   };
 
   const copyEmbedCode = (apiKey: string) => {
-    const appUrl = clientEnv.NEXT_PUBLIC_APP_URL;
+    const appUrl = getBaseUrlClient();
     const embedCode = `<script src="${appUrl}/widget.js" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
     navigator.clipboard.writeText(embedCode);
     toast.success("Embed code copied to clipboard!");

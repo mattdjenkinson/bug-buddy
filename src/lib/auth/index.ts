@@ -1,4 +1,4 @@
-import { clientEnv, serverEnv } from "@/env";
+import { serverEnv } from "@/env";
 import { prisma } from "@/lib/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
@@ -25,7 +25,6 @@ export const auth = betterAuth({
     },
   },
   secret: serverEnv.BETTER_AUTH_SECRET,
-  baseURL: serverEnv.BETTER_AUTH_URL ?? clientEnv.NEXT_PUBLIC_APP_URL,
 });
 
 export type Session = typeof auth.$Infer.Session;

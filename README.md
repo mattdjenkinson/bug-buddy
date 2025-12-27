@@ -31,7 +31,6 @@ A feedback widget system that captures screenshots, allows annotations, and auto
 
    # Better Auth
    BETTER_AUTH_SECRET="your-secret-key-here-change-in-production"
-   BETTER_AUTH_URL="http://localhost:3000"
 
    # GitHub OAuth (for user authentication)
    GITHUB_CLIENT_ID="your-github-client-id"
@@ -40,9 +39,6 @@ A feedback widget system that captures screenshots, allows annotations, and auto
    # PostHog (optional)
    NEXT_PUBLIC_POSTHOG_KEY=""
    NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
-
-   # App URL
-   NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
    # Vercel Blob
    BLOB_READ_WRITE_TOKEN="your-blob-read-write-token"

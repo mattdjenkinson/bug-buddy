@@ -322,8 +322,9 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
                   onClick={handleCloseIssue}
                   disabled={closing}
                   className="w-full sm:w-auto"
+                  loading={closing}
                 >
-                  {closing ? "Closing..." : "Close Issue"}
+                  Close Issue
                 </Button>
               )}
             </div>
