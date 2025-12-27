@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm db:generate && pnpm db:migrate:deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "email:dev": "email dev",
@@ -21,6 +21,8 @@
     "db:generate": "prisma generate --schema=src/server/prisma/schema.prisma --config=src/server/prisma/prisma.config.ts",
     "db:push": "prisma db push --schema=src/server/prisma/schema.prisma --config=src/server/prisma/prisma.config.ts",
     "db:migrate": "prisma migrate dev --schema=src/server/prisma/schema.prisma --config=src/server/prisma/prisma.config.ts",
+    "db:migrate:deploy": "prisma migrate deploy --schema=src/server/prisma/schema.prisma --config=src/server/prisma/prisma.config.ts",
+    "db:migrate:reset": "prisma migrate reset --schema=src/server/prisma/schema.prisma --config=src/server/prisma/prisma.config.ts",
     "db:studio": "prisma studio --config=src/server/prisma/prisma.config.ts"
   },
   "dependencies": {
