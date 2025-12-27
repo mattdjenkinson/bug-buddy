@@ -47,6 +47,18 @@ export function NavUser({
   const { user } = useSession();
   const { theme, setTheme } = useTheme();
 
+  const handleThemeChange = (newTheme: string) => {
+    // Use View Transition API for smooth cross-fade if available
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
+      (document as any).startViewTransition(() => {
+        setTheme(newTheme);
+      });
+    } else {
+      // Fallback for browsers without View Transition API
+      setTheme(newTheme);
+    }
+  };
+
   const handleLogout = async () => {
     startTransition(async () => {
       await authClient.signOut();
@@ -108,7 +120,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+            <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
               <DropdownMenuRadioItem value="light">
                 <Sun />
                 Light

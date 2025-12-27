@@ -176,9 +176,43 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* View Transitions API styles */
+
+/* Keyframes for route transitions */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Apply smooth transitions to all view transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+  z-index: 2147483646;
+  mix-blend-mode: normal;
 }
 
 @keyframes fadeIn {

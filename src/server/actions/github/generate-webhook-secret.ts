@@ -2,13 +2,10 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { generateWebhookSecretSchema } from "@/lib/schemas";
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-const generateWebhookSecretSchema = z.object({
-  projectId: z.string(),
-});
 
 export async function generateWebhookSecret(
   data: z.infer<typeof generateWebhookSecretSchema>,

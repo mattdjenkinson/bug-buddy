@@ -17,20 +17,16 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { createProjectSchema } from "@/lib/schemas";
 import { createProject } from "@/server/actions/projects/create";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 
-const projectSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  description: z.string().optional(),
-});
-
-type ProjectForm = z.infer<typeof projectSchema>;
+type ProjectForm = z.infer<typeof createProjectSchema>;
 
 interface CreateProjectDialogProps {
   onProjectCreated?: (project: {
@@ -60,7 +56,7 @@ export function CreateProjectDialog({
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const form = useForm<ProjectForm>({
-    resolver: zodResolver(projectSchema),
+    resolver: zodResolver(createProjectSchema),
     defaultValues: {
       name: "",
       description: "",

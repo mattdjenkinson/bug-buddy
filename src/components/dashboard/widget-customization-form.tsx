@@ -22,23 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { widgetCustomizationSchema } from "@/lib/schemas";
 import { saveWidgetCustomization } from "@/server/actions/widget/customization";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
-
-const widgetCustomizationSchema = z.object({
-  projectId: z.string(),
-  primaryColor: z.string(),
-  secondaryColor: z.string(),
-  backgroundColor: z.string(),
-  fontFamily: z.string(),
-  borderRadius: z.string(),
-  buttonText: z.string(),
-  buttonPosition: z.string(),
-});
+import { z } from "zod";
 
 type WidgetCustomizationForm = z.infer<typeof widgetCustomizationSchema>;
 

@@ -2,26 +2,16 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { widgetCustomizationUpdateSchema } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const customizeSchema = z.object({
-  projectId: z.string(),
-  primaryColor: z.string().optional(),
-  secondaryColor: z.string().optional(),
-  backgroundColor: z.string().optional(),
-  fontFamily: z.string().optional(),
-  borderRadius: z.string().optional(),
-  buttonText: z.string().optional(),
-  buttonPosition: z.string().optional(),
-});
-
 export async function saveWidgetCustomization(
-  data: z.infer<typeof customizeSchema>,
+  data: z.infer<typeof widgetCustomizationUpdateSchema>,
 ) {
   try {
     const session = await requireAuth();
-    const validated = customizeSchema.parse(data);
+    const validated = widgetCustomizationUpdateSchema.parse(data);
 
     // Verify project belongs to user
     const project = await prisma.project.findFirst({

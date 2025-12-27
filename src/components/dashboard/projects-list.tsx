@@ -11,7 +11,8 @@ import {
 import { FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { getBaseUrlClient } from "@/lib/base-url.client";
-import { Check, Code, Copy } from "lucide-react";
+import { Check, Code, Copy, Settings2 } from "lucide-react";
+import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./create-project-dialog";
@@ -106,14 +107,24 @@ export function ProjectsList({
                   </Button>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => copyEmbedCode(project.apiKey)}
-              >
-                <Code className="h-4 w-4" />
-                Copy Embed Code
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => copyEmbedCode(project.apiKey)}
+                >
+                  <Code className="h-4 w-4" />
+                  Copy Embed Code
+                </Button>
+                <Button variant="outline" size="icon" asChild>
+                  <Link
+                    href="/dashboard/settings"
+                    aria-label="Project settings"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}

@@ -3,25 +3,17 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { githubIntegrationSchema } from "@/lib/schemas";
 import { Octokit } from "@octokit/rest";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const integrationSchema = z.object({
-  projectId: z.string(),
-  personalAccessToken: z.string().optional(), // Optional - will use OAuth token if not provided
-  repositoryOwner: z.string(),
-  repositoryName: z.string(),
-  defaultLabels: z.array(z.string()).optional(),
-  defaultAssignees: z.array(z.string()).optional(),
-});
-
 export async function saveGitHubIntegration(
-  data: z.infer<typeof integrationSchema>,
+  data: z.infer<typeof githubIntegrationSchema>,
 ) {
   try {
     const session = await requireAuth();
-    const validated = integrationSchema.parse(data);
+    const validated = githubIntegrationSchema.parse(data);
 
     // Verify project belongs to user
     const project = await prisma.project.findFirst({

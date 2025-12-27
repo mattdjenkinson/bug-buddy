@@ -34,6 +34,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { Spinner } from "../ui/spinner";
 
 const projectSettingsSchema = z.object({
   name: z.string().min(1, "Project name is required"),
@@ -233,7 +234,9 @@ export function ProjectSettingsForm({
           <form>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="name">Project Name</FieldLabel>
+                <FieldLabel htmlFor="name" className="flex items-center gap-2">
+                  Project Name {saving && <Spinner />}
+                </FieldLabel>
                 <div className="flex gap-2 items-center">
                   <Input
                     className="max-w-xs"
@@ -242,11 +245,6 @@ export function ProjectSettingsForm({
                     placeholder="My Project"
                     aria-invalid={!!form.formState.errors.name}
                   />
-                  {saving && (
-                    <span className="text-sm text-muted-foreground">
-                      Saving...
-                    </span>
-                  )}
                 </div>
                 {form.formState.errors.name && (
                   <FieldError
@@ -342,7 +340,7 @@ export function ProjectSettingsForm({
             </Field>
           </div>
 
-          <div className="mt-6 space-y-4 border-t pt-6">
+          <div className="mt-6 border-t pt-6">
             <Field>
               <FieldLabel>API Key</FieldLabel>
               <div className="flex gap-2">
@@ -375,6 +373,7 @@ export function ProjectSettingsForm({
               type="button"
               onClick={() => setShowRefreshDialog(true)}
               disabled={refreshing}
+              className="mt-2"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh API Key

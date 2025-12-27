@@ -2,19 +2,15 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { createProjectSchema } from "@/lib/schemas";
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const projectSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-});
-
-export async function createProject(data: z.infer<typeof projectSchema>) {
+export async function createProject(data: z.infer<typeof createProjectSchema>) {
   try {
     const session = await requireAuth();
-    const validated = projectSchema.parse(data);
+    const validated = createProjectSchema.parse(data);
 
     // Generate API key
     const apiKey = `bb_${randomBytes(32).toString("hex")}`;

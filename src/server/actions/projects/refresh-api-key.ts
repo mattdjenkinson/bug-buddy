@@ -2,13 +2,10 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { refreshApiKeySchema } from "@/lib/schemas";
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-const refreshApiKeySchema = z.object({
-  projectId: z.string(),
-});
 
 export async function refreshApiKey(data: z.infer<typeof refreshApiKeySchema>) {
   try {

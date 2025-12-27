@@ -3,12 +3,9 @@
 import { requireAuth } from "@/lib/auth/helpers";
 import { closeGitHubIssue } from "@/lib/github";
 import { prisma } from "@/lib/prisma";
+import { closeIssueSchema } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-const closeIssueSchema = z.object({
-  issueId: z.string(),
-});
 
 export async function closeIssue(data: z.infer<typeof closeIssueSchema>) {
   try {

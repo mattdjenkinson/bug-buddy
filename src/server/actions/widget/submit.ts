@@ -2,20 +2,9 @@
 
 import { createGitHubIssue } from "@/lib/github";
 import { prisma } from "@/lib/prisma";
+import { widgetSubmitSchema } from "@/lib/schemas";
 import { UAParser } from "ua-parser-js";
 import { z } from "zod";
-
-const submitSchema = z.object({
-  projectKey: z.string().min(1),
-  title: z.string().min(1),
-  description: z.string().min(1),
-  screenshot: z.string(),
-  annotations: z.string().optional(),
-  userName: z.string().optional(),
-  userEmail: z.email().optional().or(z.literal("")),
-  url: z.string().optional(),
-  userAgent: z.string().optional(),
-});
 
 function parseUserAgent(userAgent: string | null | undefined): string {
   if (!userAgent) {
@@ -64,9 +53,9 @@ function parseUserAgent(userAgent: string | null | undefined): string {
   }
 }
 
-export async function submitFeedback(data: z.infer<typeof submitSchema>) {
+export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
   try {
-    const validated = submitSchema.parse(data);
+    const validated = widgetSubmitSchema.parse(data);
 
     // Find project by API key
     const project = await prisma.project.findUnique({

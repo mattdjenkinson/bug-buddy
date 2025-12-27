@@ -1,15 +1,12 @@
 "use server";
 
+import { widgetUploadSchema } from "@/lib/schemas";
 import { put } from "@vercel/blob";
 import { z } from "zod";
 
-const uploadSchema = z.object({
-  image: z.string().min(1, "Image data is required"),
-});
-
-export async function uploadImage(data: z.infer<typeof uploadSchema>) {
+export async function uploadImage(data: z.infer<typeof widgetUploadSchema>) {
   try {
-    const validated = uploadSchema.parse(data);
+    const validated = widgetUploadSchema.parse(data);
     const { image } = validated;
 
     // Check if it's a base64 data URL

@@ -13,7 +13,7 @@ const Field = React.forwardRef<
       ref={ref}
       data-invalid={invalid}
       className={cn(
-        "space-y-2",
+        "flex flex-col gap-2",
         orientation === "horizontal" &&
           "flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4",
         invalid && "data-[invalid=true]:text-destructive",

@@ -2,14 +2,9 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { updateProjectSchema } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-const updateProjectSchema = z.object({
-  projectId: z.string(),
-  name: z.string().min(1),
-  allowedDomains: z.array(z.string()).optional(),
-});
 
 export async function updateProject(data: z.infer<typeof updateProjectSchema>) {
   try {

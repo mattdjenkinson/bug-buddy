@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getBaseUrlClient } from "@/lib/base-url.client";
+import { githubIntegrationFormSchema } from "@/lib/schemas";
 import { generateWebhookSecret } from "@/server/actions/github/generate-webhook-secret";
 import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
@@ -33,17 +34,9 @@ import { Check, Copy, ExternalLink, RefreshCw } from "lucide-react";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 
-const githubIntegrationSchema = z.object({
-  projectId: z.string(),
-  personalAccessToken: z.string().optional(), // Optional - will use OAuth token if not provided
-  repository: z.string().min(1, "Repository is required"), // Format: "owner/repo"
-  defaultLabels: z.string().optional(),
-  defaultAssignees: z.string().optional(),
-});
-
-type GitHubIntegrationForm = z.infer<typeof githubIntegrationSchema>;
+type GitHubIntegrationForm = z.infer<typeof githubIntegrationFormSchema>;
 
 interface GitHubIntegrationFormProps {
   projectId: string;
@@ -85,7 +78,7 @@ export function GitHubIntegrationForm({
     : "";
 
   const form = useForm<GitHubIntegrationForm>({
-    resolver: zodResolver(githubIntegrationSchema),
+    resolver: zodResolver(githubIntegrationFormSchema),
     defaultValues: {
       projectId,
       personalAccessToken: initialData?.personalAccessToken || "",
@@ -200,10 +193,10 @@ export function GitHubIntegrationForm({
         repositoryOwner,
         repositoryName,
         defaultLabels: data.defaultLabels
-          ? data.defaultLabels.split(",").map((l) => l.trim())
+          ? data.defaultLabels.split(",").map((l: string) => l.trim())
           : [],
         defaultAssignees: data.defaultAssignees
-          ? data.defaultAssignees.split(",").map((a) => a.trim())
+          ? data.defaultAssignees.split(",").map((a: string) => a.trim())
           : [],
       });
 
@@ -278,9 +271,46 @@ export function GitHubIntegrationForm({
                     </Select>
                   )}
                   <FieldDescription>
-                    {repoError
-                      ? `Error: ${repoError}. You can still provide a Personal Access Token below.`
-                      : "Select a repository from your GitHub account. We'll use your GitHub OAuth token to connect."}
+                    {repoError ? (
+                      <span>
+                        Error: {repoError}.{" "}
+                        {repoError.includes("organization") ||
+                        repoError.includes("Access denied") ? (
+                          <span>
+                            If you don&apos;t see organization repositories, you
+                            may need to{" "}
+                            <a
+                              href="https://github.com/settings/connections/applications"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline"
+                            >
+                              re-authorize the app
+                            </a>{" "}
+                            or have your organization approve it. You can also
+                            provide a Personal Access Token below.
+                          </span>
+                        ) : (
+                          "You can still provide a Personal Access Token below."
+                        )}
+                      </span>
+                    ) : (
+                      <div>
+                        Select a repository from your GitHub account and
+                        organizations. We&apos;ll use your GitHub OAuth token to
+                        connect. If you don&apos;t see organization
+                        repositories, you may need to have your organization
+                        approve it at{" "}
+                        <a
+                          href="https://github.com/settings/connections/applications"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          GitHub Settings.
+                        </a>
+                      </div>
+                    )}
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError

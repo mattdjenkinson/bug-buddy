@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
-import * as z from "zod";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,24 +28,12 @@ import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { getBaseUrlClient } from "@/lib/base-url.client";
+import { widgetSubmitFormSchema } from "@/lib/schemas";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-const formSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Title must be at least 5 characters.")
-    .max(100, "Title must be at most 100 characters."),
-  description: z
-    .string()
-    .min(10, "Description must be at least 10 characters.")
-    .max(1000, "Description must be at most 1000 characters."),
-  name: z.string().optional(),
-  email: z.email("Invalid email address.").optional().or(z.literal("")),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof widgetSubmitFormSchema>;
 
 export default function WidgetEmbedPageContent() {
   const searchParams = useSearchParams();
@@ -90,7 +78,7 @@ export default function WidgetEmbedPageContent() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(widgetSubmitFormSchema),
     defaultValues: {
       title: "",
       description: "",

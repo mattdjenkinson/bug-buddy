@@ -2,11 +2,8 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { unlinkAccountSchema } from "@/lib/schemas";
 import { z } from "zod";
-
-const unlinkAccountSchema = z.object({
-  accountId: z.string(),
-});
 
 export async function unlinkAccount(data: z.infer<typeof unlinkAccountSchema>) {
   try {

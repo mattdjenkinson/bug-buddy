@@ -2,12 +2,9 @@
 
 import { requireAuth } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import { deleteProjectSchema } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-const deleteProjectSchema = z.object({
-  projectId: z.string(),
-});
 
 export async function deleteProject(data: z.infer<typeof deleteProjectSchema>) {
   try {
