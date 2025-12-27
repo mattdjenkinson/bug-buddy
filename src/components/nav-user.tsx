@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import {
+  ChevronsUpDown,
+  LogOut,
+  Monitor,
+  Moon,
+  Sun,
+  User2,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
@@ -22,9 +29,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth/client";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { useTransition } from "react";
 
-export function NavUser() {
+export function NavUser({
+  small,
+  className,
+}: {
+  small?: boolean;
+  className?: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const { isMobile } = useSidebar();
   const router = useRouter();
@@ -52,12 +67,14 @@ export function NavUser() {
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
+      <SidebarMenuItem className={className}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
+              className={cn(
+                "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer",
+              )}
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.image || ""} alt={user.name || ""} />
@@ -65,11 +82,13 @@ export function NavUser() {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              {!small && (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs">{user.email}</span>
+                </div>
+              )}
+              {!small && <ChevronsUpDown className="ml-auto size-4" />}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -107,6 +126,13 @@ export function NavUser() {
                 System
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/account">
+                <User2 />
+                Account settings
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} disabled={isPending}>
               <LogOut />

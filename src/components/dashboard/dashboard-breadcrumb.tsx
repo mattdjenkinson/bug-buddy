@@ -78,7 +78,7 @@ export function DashboardBreadcrumb() {
   const breadcrumbs = buildBreadcrumbs();
 
   return (
-    <Breadcrumb className="hidden md:block">
+    <Breadcrumb className="hidden md:block w-full">
       <BreadcrumbList>
         {breadcrumbs.map((item, index) => {
           const isLast = index === breadcrumbs.length - 1;

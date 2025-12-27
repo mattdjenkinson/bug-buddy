@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardBreadcrumb } from "@/components/dashboard/dashboard-breadcrumb";
+import { NavUser } from "@/components/nav-user";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -18,14 +19,16 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 sticky top-0 z-10 bg-background">
-            <div className="flex items-center gap-2 px-4">
+          <header className="flex h-16 shrink-0 items-center gap-2 sticky top-0 z-10 bg-background w-full">
+            <div className="flex items-center gap-2 px-4 w-full">
               <SidebarTrigger className="-ml-1" />
               <Separator
                 orientation="vertical"
-                className="mr-2 data-[orientation=vertical]:h-4"
+                className="mr-2 data-[orientation=vertical]:h-4 hidden md:block"
               />
+
               <DashboardBreadcrumb />
+              <NavUser small className="self-end md:hidden" />
             </div>
           </header>
           <main

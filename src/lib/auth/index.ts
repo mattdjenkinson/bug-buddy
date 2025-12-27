@@ -2,11 +2,13 @@ import { clientEnv, serverEnv } from "@/env";
 import { prisma } from "@/lib/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { lastLoginMethod } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  plugins: [lastLoginMethod()],
   emailAndPassword: {
     enabled: false,
   },
@@ -15,6 +17,11 @@ export const auth = betterAuth({
       clientId: serverEnv.GITHUB_CLIENT_ID,
       clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
       scope: ["read:user", "user:email", "repo"],
+    },
+  },
+  user: {
+    deleteUser: {
+      enabled: true,
     },
   },
   secret: serverEnv.BETTER_AUTH_SECRET,
