@@ -1,5 +1,5 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
 const Field = React.forwardRef<
   HTMLDivElement,
@@ -17,7 +17,7 @@ const Field = React.forwardRef<
         orientation === "horizontal" &&
           "flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4",
         invalid && "data-[invalid=true]:text-destructive",
-        className
+        className,
       )}
       {...props}
     />
@@ -34,7 +34,7 @@ const FieldLabel = React.forwardRef<
       ref={ref}
       className={cn(
         "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-        className
+        className,
       )}
       {...props}
     />
@@ -98,7 +98,7 @@ FieldSet.displayName = "FieldSet";
 
 const FieldLegend = React.forwardRef<
   HTMLLegendElement,
-  React.LegendHTMLAttributes<HTMLLegendElement> & {
+  React.HTMLAttributes<HTMLLegendElement> & {
     variant?: "label" | "default";
   }
 >(({ className, variant = "default", ...props }, ref) => {
@@ -109,7 +109,7 @@ const FieldLegend = React.forwardRef<
         variant === "label"
           ? "text-sm font-medium leading-none"
           : "text-base font-semibold",
-        className
+        className,
       )}
       {...props}
     />
@@ -127,11 +127,11 @@ FieldContent.displayName = "FieldContent";
 
 export {
   Field,
-  FieldLabel,
+  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
-  FieldSet,
+  FieldLabel,
   FieldLegend,
-  FieldContent,
+  FieldSet,
 };
