@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client"
+    output   = "./generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Session {
+    id        String   @id
+    expiresAt DateTime
+    token     String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    ipAddress String?
+    userAgent String?
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([token])
+    @@index([userId])
+    @@map("session")
+}
+
+model Account {
+    id                    String    @id
+    accountId             String
+    providerId            String
+    userId                String
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime  @default(now())
+    updatedAt             DateTime  @updatedAt
+
+    @@index([userId])
+    @@map("account")
+}
+
+model Verification {
+    id         String   @id
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@index([identifier])
+    @@map("verification")
+}
+
+model User {
+    id            String   @id @default(cuid())
+    name          String?
+    email         String   @unique
+    emailVerified Boolean?
+    image         String?
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    // Relations
+    projects Project[]
+
+    sessions Session[]
+    accounts Account[]
+
+    @@map("user")
+}
+
+model Project {
+    id             String   @id @default(cuid())
+    name           String
+    apiKey         String   @unique
+    description    String?
+    allowedDomains String[] @default([])
+    userId         String
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    // Relations
+    user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+    feedback            Feedback[]
+    githubIntegration   GitHubIntegration?
+    widgetCustomization WidgetCustomization?
+
+    @@map("project")
+}
+
+model Feedback {
+    id          String   @id @default(cuid())
+    projectId   String
+    title       String?
+    description String
+    screenshot  String // Base64 or URL to screenshot
+    annotations String? // JSON string of annotation data
+    userName    String?
+    userEmail   String?
+    userAgent   String?
+    url         String? // URL where feedback was submitted from
+    status      String   @default("open") // open, closed, in-progress
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relations
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    issue   Issue?
+
+    @@map("feedback")
+}
+
+model GitHubIntegration {
+    id                  String   @id @default(cuid())
+    projectId           String   @unique
+    appId               String? // GitHub App ID
+    installationId      String? // GitHub App Installation ID
+    privateKey          String? // Encrypted private key
+    personalAccessToken String? // Personal Access Token (encrypted)
+    repositoryOwner     String
+    repositoryName      String
+    defaultLabels       String[] @default([])
+    defaultAssignees    String[] @default([])
+    webhookSecret       String?
+    createdAt           DateTime @default(now())
+    updatedAt           DateTime @updatedAt
+
+    // Relations
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@map("github_integration")
+}
+
+model WidgetCustomization {
+    id              String   @id @default(cuid())
+    projectId       String   @unique
+    primaryColor    String   @default("#000000")
+    secondaryColor  String   @default("#ffffff")
+    backgroundColor String   @default("#ffffff")
+    fontFamily      String   @default("system-ui")
+    borderRadius    String   @default("8px")
+    buttonText      String   @default("Feedback")
+    buttonPosition  String   @default("bottom-right") // bottom-right, bottom-left, top-right, top-left
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+
+    // Relations
+    project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@map("widget_customization")
+}
+
+model Issue {
+    id             String   @id @default(cuid())
+    feedbackId     String   @unique
+    githubIssueId  Int // GitHub issue number
+    githubIssueUrl String
+    title          String
+    body           String
+    state          String // open, closed
+    assignees      String[] @default([]) // GitHub usernames
+    labels         String[] @default([])
+    commentsCount  Int      @default(0)
+    prsCount       Int      @default(0)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    syncedAt       DateTime @default(now()) // Last sync with GitHub
+
+    // Relations
+    feedback   Feedback        @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+    activities IssueActivity[]
+
+    @@map("issue")
+}
+
+model IssueActivity {
+    id        String   @id @default(cuid())
+    issueId   String
+    type      String // comment, assignee, label, state_change, pr
+    actor     String? // GitHub username
+    content   String? // Comment text or description
+    metadata  String? // JSON string for additional data
+    createdAt DateTime @default(now())
+
+    // Relations
+    issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+    @@map("issue_activity")
+}

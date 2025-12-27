@@ -1,0 +1,24 @@
+import { clientEnv, serverEnv } from "@/env";
+import { prisma } from "@/lib/prisma";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  emailAndPassword: {
+    enabled: false,
+  },
+  socialProviders: {
+    github: {
+      clientId: serverEnv.GITHUB_CLIENT_ID,
+      clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
+      scope: ["read:user", "user:email", "repo"],
+    },
+  },
+  secret: serverEnv.BETTER_AUTH_SECRET,
+  baseURL: serverEnv.BETTER_AUTH_URL ?? clientEnv.NEXT_PUBLIC_APP_URL,
+});
+
+export type Session = typeof auth.$Infer.Session;
