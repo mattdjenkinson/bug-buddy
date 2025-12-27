@@ -43,13 +43,21 @@ interface CreateProjectDialogProps {
       feedback: number;
     };
   }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function CreateProjectDialog({
   onProjectCreated,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: CreateProjectDialogProps) {
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const [creating, setCreating] = React.useState(false);
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const form = useForm<ProjectForm>({
     resolver: zodResolver(projectSchema),

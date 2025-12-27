@@ -10,6 +10,13 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
+  // Check if user has any projects
+  const projectCount = await prisma.project.count({
+    where: { userId: session.user.id },
+  });
+
+  const hasProjects = projectCount > 0;
+
   // Get latest 4 feedback items
   const latestFeedback = await prisma.feedback.findMany({
     where: {
@@ -90,6 +97,7 @@ export default async function DashboardPage() {
         inProgress,
         closed,
       }}
+      hasProjects={hasProjects}
     />
   );
 }

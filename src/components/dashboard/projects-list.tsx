@@ -27,11 +27,16 @@ interface ProjectsListProps {
       feedback: number;
     };
   }>;
+  openDialog?: boolean;
 }
 
-export function ProjectsList({ projects: initialProjects }: ProjectsListProps) {
+export function ProjectsList({
+  projects: initialProjects,
+  openDialog = false,
+}: ProjectsListProps) {
   const [projects, setProjects] = React.useState(initialProjects);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = React.useState(openDialog);
 
   const handleProjectCreated = (project: ProjectsListProps["projects"][0]) => {
     setProjects([project, ...projects]);
@@ -59,7 +64,11 @@ export function ProjectsList({ projects: initialProjects }: ProjectsListProps) {
             Manage your feedback widget projects
           </p>
         </div>
-        <CreateProjectDialog onProjectCreated={handleProjectCreated} />
+        <CreateProjectDialog
+          onProjectCreated={handleProjectCreated}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

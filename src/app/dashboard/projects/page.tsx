@@ -3,8 +3,15 @@ import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
-export default async function ProjectsPage() {
+interface ProjectsPageProps {
+  searchParams: Promise<{ new?: string }>;
+}
+
+export default async function ProjectsPage({
+  searchParams,
+}: ProjectsPageProps) {
   const session = await getSession();
+  const { new: newParam } = await searchParams;
 
   if (!session?.user) {
     redirect("/");
@@ -33,5 +40,12 @@ export default async function ProjectsPage() {
     _count: project._count,
   }));
 
-  return <ProjectsList projects={projectsWithStringDates} />;
+  const shouldOpenDialog = newParam === "true" || projects.length === 0;
+
+  return (
+    <ProjectsList
+      projects={projectsWithStringDates}
+      openDialog={shouldOpenDialog}
+    />
+  );
 }
