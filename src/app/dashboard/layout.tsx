@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
+import { SessionProvider } from "@/components/auth/session-provider";
 import { DashboardBreadcrumb } from "@/components/dashboard/dashboard-breadcrumb";
 import { NavUser } from "@/components/nav-user";
-import { PostHogProvider } from "@/components/posthog-provider";
 import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
@@ -15,7 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <PostHogProvider>
+    <SessionProvider>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
@@ -39,6 +39,6 @@ export default function DashboardLayout({
           </main>
         </SidebarInset>
       </SidebarProvider>
-    </PostHogProvider>
+    </SessionProvider>
   );
 }

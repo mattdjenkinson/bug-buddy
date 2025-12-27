@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "@/components/auth/session-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,7 +40,8 @@ interface AccountSettingsClientProps {
   };
 }
 
-export function AccountSettingsClient({ user }: AccountSettingsClientProps) {
+export function AccountSettingsClient() {
+  const { user } = useSession();
   const router = useRouter();
   const [accounts, setAccounts] = React.useState<
     Array<{
@@ -234,13 +236,13 @@ export function AccountSettingsClient({ user }: AccountSettingsClientProps) {
               <Field>
                 <FieldLabel>Name</FieldLabel>
                 <div className="text-sm text-muted-foreground">
-                  {user.name || "Not set"}
+                  {user?.name || "Not set"}
                 </div>
               </Field>
               <Field>
                 <FieldLabel>Email</FieldLabel>
                 <div className="text-sm text-muted-foreground">
-                  {user.email}
+                  {user?.email}
                 </div>
               </Field>
             </FieldGroup>

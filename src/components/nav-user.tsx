@@ -11,6 +11,7 @@ import {
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
+import { useSession } from "@/components/auth/session-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -43,8 +44,7 @@ export function NavUser({
   const [isPending, startTransition] = useTransition();
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const { data, isPending: isSessionPending } = authClient.useSession();
-  const user = data?.user;
+  const { user } = useSession();
   const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
@@ -54,11 +54,7 @@ export function NavUser({
     });
   };
 
-  if (!user || isPending || isSessionPending) {
-    return null;
-  }
-
-  const initials = user.name
+  const initials = user?.name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -77,15 +73,15 @@ export function NavUser({
               )}
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.image || ""} alt={user.name || ""} />
+                <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
                 <AvatarFallback className="rounded-lg">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               {!small && (
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user?.name}</span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               )}
               {!small && <ChevronsUpDown className="ml-auto size-4" />}
@@ -100,14 +96,14 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.image || ""} alt={user.name || ""} />
+                  <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
                   <AvatarFallback className="rounded-lg">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user?.name}</span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
