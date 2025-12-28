@@ -67,3 +67,8 @@ export type Issue = Prisma.IssueModel
  * 
  */
 export type IssueActivity = Prisma.IssueActivityModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel

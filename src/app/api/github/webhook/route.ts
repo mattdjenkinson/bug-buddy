@@ -83,6 +83,13 @@ export async function POST(request: NextRequest) {
             projectId: integration.projectId,
           },
         },
+        include: {
+          feedback: {
+            include: {
+              project: true,
+            },
+          },
+        },
       });
 
       if (dbIssue) {
@@ -98,6 +105,17 @@ export async function POST(request: NextRequest) {
               actor: issue.user?.login || null,
               content: `Issue ${action}`,
               metadata: JSON.stringify({ state: issue.state }),
+            },
+          });
+
+          // Create notification for the project owner
+          await prisma.notification.create({
+            data: {
+              userId: dbIssue.feedback.project.userId,
+              issueId: dbIssue.id,
+              type: "issue_state_change",
+              title: `Issue ${action === "closed" ? "closed" : "reopened"}`,
+              message: `Issue #${issue.number} in ${integration.repositoryOwner}/${integration.repositoryName} was ${action}${issue.user?.login ? ` by ${issue.user.login}` : ""}`,
             },
           });
         }
@@ -126,6 +144,13 @@ export async function POST(request: NextRequest) {
             projectId: integration.projectId,
           },
         },
+        include: {
+          feedback: {
+            include: {
+              project: true,
+            },
+          },
+        },
       });
 
       if (dbIssue && action === "created") {
@@ -147,6 +172,17 @@ export async function POST(request: NextRequest) {
             commentsCount: {
               increment: 1,
             },
+          },
+        });
+
+        // Create notification for the project owner
+        await prisma.notification.create({
+          data: {
+            userId: dbIssue.feedback.project.userId,
+            issueId: dbIssue.id,
+            type: "issue_comment",
+            title: "New comment on issue",
+            message: `${comment.user?.login || "Someone"} commented on issue #${issue.number} in ${integration.repositoryOwner}/${integration.repositoryName}`,
           },
         });
       }

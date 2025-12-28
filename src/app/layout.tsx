@@ -1,3 +1,4 @@
+import QueryProvider from "@/components/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
@@ -35,7 +36,7 @@ export default function RootLayout({
           enableSystem
           storageKey="bug-buddy-theme"
         >
-          {children}
+          <QueryProvider>{children}</QueryProvider>
           <Toaster />
         </ThemeProvider>
       </body>

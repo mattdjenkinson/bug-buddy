@@ -290,6 +290,7 @@ export type IssueWhereInput = {
   syncedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   feedback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
   activities?: Prisma.IssueActivityListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
 }
 
 export type IssueOrderByWithRelationInput = {
@@ -309,6 +310,7 @@ export type IssueOrderByWithRelationInput = {
   syncedAt?: Prisma.SortOrder
   feedback?: Prisma.FeedbackOrderByWithRelationInput
   activities?: Prisma.IssueActivityOrderByRelationAggregateInput
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
 }
 
 export type IssueWhereUniqueInput = Prisma.AtLeast<{
@@ -331,6 +333,7 @@ export type IssueWhereUniqueInput = Prisma.AtLeast<{
   syncedAt?: Prisma.DateTimeFilter<"Issue"> | Date | string
   feedback?: Prisma.XOR<Prisma.FeedbackScalarRelationFilter, Prisma.FeedbackWhereInput>
   activities?: Prisma.IssueActivityListRelationFilter
+  notifications?: Prisma.NotificationListRelationFilter
 }, "id" | "feedbackId">
 
 export type IssueOrderByWithAggregationInput = {
@@ -391,6 +394,7 @@ export type IssueCreateInput = {
   syncedAt?: Date | string
   feedback: Prisma.FeedbackCreateNestedOneWithoutIssueInput
   activities?: Prisma.IssueActivityCreateNestedManyWithoutIssueInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateInput = {
@@ -409,6 +413,7 @@ export type IssueUncheckedCreateInput = {
   updatedAt?: Date | string
   syncedAt?: Date | string
   activities?: Prisma.IssueActivityUncheckedCreateNestedManyWithoutIssueInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUpdateInput = {
@@ -427,6 +432,7 @@ export type IssueUpdateInput = {
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feedback?: Prisma.FeedbackUpdateOneRequiredWithoutIssueNestedInput
   activities?: Prisma.IssueActivityUpdateManyWithoutIssueNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateInput = {
@@ -445,6 +451,7 @@ export type IssueUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.IssueActivityUncheckedUpdateManyWithoutIssueNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueCreateManyInput = {
@@ -638,6 +645,22 @@ export type IssueUpdateOneRequiredWithoutActivitiesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutActivitiesInput, Prisma.IssueUpdateWithoutActivitiesInput>, Prisma.IssueUncheckedUpdateWithoutActivitiesInput>
 }
 
+export type IssueCreateNestedOneWithoutNotificationsInput = {
+  create?: Prisma.XOR<Prisma.IssueCreateWithoutNotificationsInput, Prisma.IssueUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutNotificationsInput
+  connect?: Prisma.IssueWhereUniqueInput
+}
+
+export type IssueUpdateOneWithoutNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.IssueCreateWithoutNotificationsInput, Prisma.IssueUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.IssueCreateOrConnectWithoutNotificationsInput
+  upsert?: Prisma.IssueUpsertWithoutNotificationsInput
+  disconnect?: Prisma.IssueWhereInput | boolean
+  delete?: Prisma.IssueWhereInput | boolean
+  connect?: Prisma.IssueWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.IssueUpdateToOneWithWhereWithoutNotificationsInput, Prisma.IssueUpdateWithoutNotificationsInput>, Prisma.IssueUncheckedUpdateWithoutNotificationsInput>
+}
+
 export type IssueCreateWithoutFeedbackInput = {
   id?: string
   githubIssueId: number
@@ -653,6 +676,7 @@ export type IssueCreateWithoutFeedbackInput = {
   updatedAt?: Date | string
   syncedAt?: Date | string
   activities?: Prisma.IssueActivityCreateNestedManyWithoutIssueInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateWithoutFeedbackInput = {
@@ -670,6 +694,7 @@ export type IssueUncheckedCreateWithoutFeedbackInput = {
   updatedAt?: Date | string
   syncedAt?: Date | string
   activities?: Prisma.IssueActivityUncheckedCreateNestedManyWithoutIssueInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueCreateOrConnectWithoutFeedbackInput = {
@@ -703,6 +728,7 @@ export type IssueUpdateWithoutFeedbackInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.IssueActivityUpdateManyWithoutIssueNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateWithoutFeedbackInput = {
@@ -720,6 +746,7 @@ export type IssueUncheckedUpdateWithoutFeedbackInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activities?: Prisma.IssueActivityUncheckedUpdateManyWithoutIssueNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueCreateWithoutActivitiesInput = {
@@ -737,6 +764,7 @@ export type IssueCreateWithoutActivitiesInput = {
   updatedAt?: Date | string
   syncedAt?: Date | string
   feedback: Prisma.FeedbackCreateNestedOneWithoutIssueInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutIssueInput
 }
 
 export type IssueUncheckedCreateWithoutActivitiesInput = {
@@ -754,6 +782,7 @@ export type IssueUncheckedCreateWithoutActivitiesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   syncedAt?: Date | string
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutIssueInput
 }
 
 export type IssueCreateOrConnectWithoutActivitiesInput = {
@@ -787,6 +816,7 @@ export type IssueUpdateWithoutActivitiesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feedback?: Prisma.FeedbackUpdateOneRequiredWithoutIssueNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutIssueNestedInput
 }
 
 export type IssueUncheckedUpdateWithoutActivitiesInput = {
@@ -804,6 +834,95 @@ export type IssueUncheckedUpdateWithoutActivitiesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutIssueNestedInput
+}
+
+export type IssueCreateWithoutNotificationsInput = {
+  id?: string
+  githubIssueId: number
+  githubIssueUrl: string
+  title: string
+  body: string
+  state: string
+  assignees?: Prisma.IssueCreateassigneesInput | string[]
+  labels?: Prisma.IssueCreatelabelsInput | string[]
+  commentsCount?: number
+  prsCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  syncedAt?: Date | string
+  feedback: Prisma.FeedbackCreateNestedOneWithoutIssueInput
+  activities?: Prisma.IssueActivityCreateNestedManyWithoutIssueInput
+}
+
+export type IssueUncheckedCreateWithoutNotificationsInput = {
+  id?: string
+  feedbackId: string
+  githubIssueId: number
+  githubIssueUrl: string
+  title: string
+  body: string
+  state: string
+  assignees?: Prisma.IssueCreateassigneesInput | string[]
+  labels?: Prisma.IssueCreatelabelsInput | string[]
+  commentsCount?: number
+  prsCount?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  syncedAt?: Date | string
+  activities?: Prisma.IssueActivityUncheckedCreateNestedManyWithoutIssueInput
+}
+
+export type IssueCreateOrConnectWithoutNotificationsInput = {
+  where: Prisma.IssueWhereUniqueInput
+  create: Prisma.XOR<Prisma.IssueCreateWithoutNotificationsInput, Prisma.IssueUncheckedCreateWithoutNotificationsInput>
+}
+
+export type IssueUpsertWithoutNotificationsInput = {
+  update: Prisma.XOR<Prisma.IssueUpdateWithoutNotificationsInput, Prisma.IssueUncheckedUpdateWithoutNotificationsInput>
+  create: Prisma.XOR<Prisma.IssueCreateWithoutNotificationsInput, Prisma.IssueUncheckedCreateWithoutNotificationsInput>
+  where?: Prisma.IssueWhereInput
+}
+
+export type IssueUpdateToOneWithWhereWithoutNotificationsInput = {
+  where?: Prisma.IssueWhereInput
+  data: Prisma.XOR<Prisma.IssueUpdateWithoutNotificationsInput, Prisma.IssueUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type IssueUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  githubIssueId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubIssueUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  assignees?: Prisma.IssueUpdateassigneesInput | string[]
+  labels?: Prisma.IssueUpdatelabelsInput | string[]
+  commentsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  prsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feedback?: Prisma.FeedbackUpdateOneRequiredWithoutIssueNestedInput
+  activities?: Prisma.IssueActivityUpdateManyWithoutIssueNestedInput
+}
+
+export type IssueUncheckedUpdateWithoutNotificationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  feedbackId?: Prisma.StringFieldUpdateOperationsInput | string
+  githubIssueId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubIssueUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  assignees?: Prisma.IssueUpdateassigneesInput | string[]
+  labels?: Prisma.IssueUpdatelabelsInput | string[]
+  commentsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  prsCount?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activities?: Prisma.IssueActivityUncheckedUpdateManyWithoutIssueNestedInput
 }
 
 
@@ -813,10 +932,12 @@ export type IssueUncheckedUpdateWithoutActivitiesInput = {
 
 export type IssueCountOutputType = {
   activities: number
+  notifications: number
 }
 
 export type IssueCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   activities?: boolean | IssueCountOutputTypeCountActivitiesArgs
+  notifications?: boolean | IssueCountOutputTypeCountNotificationsArgs
 }
 
 /**
@@ -834,6 +955,13 @@ export type IssueCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
  */
 export type IssueCountOutputTypeCountActivitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.IssueActivityWhereInput
+}
+
+/**
+ * IssueCountOutputType without action
+ */
+export type IssueCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
 }
 
 
@@ -854,6 +982,7 @@ export type IssueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   syncedAt?: boolean
   feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
   activities?: boolean | Prisma.Issue$activitiesArgs<ExtArgs>
+  notifications?: boolean | Prisma.Issue$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["issue"]>
 
@@ -914,6 +1043,7 @@ export type IssueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type IssueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   feedback?: boolean | Prisma.FeedbackDefaultArgs<ExtArgs>
   activities?: boolean | Prisma.Issue$activitiesArgs<ExtArgs>
+  notifications?: boolean | Prisma.Issue$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.IssueCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type IssueIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -928,6 +1058,7 @@ export type $IssuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     feedback: Prisma.$FeedbackPayload<ExtArgs>
     activities: Prisma.$IssueActivityPayload<ExtArgs>[]
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1340,6 +1471,7 @@ export interface Prisma__IssueClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   feedback<T extends Prisma.FeedbackDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FeedbackDefaultArgs<ExtArgs>>): Prisma.Prisma__FeedbackClient<runtime.Types.Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   activities<T extends Prisma.Issue$activitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$IssueActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notifications<T extends Prisma.Issue$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Issue$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1800,6 +1932,30 @@ export type Issue$activitiesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.IssueActivityScalarFieldEnum | Prisma.IssueActivityScalarFieldEnum[]
+}
+
+/**
+ * Issue.notifications
+ */
+export type Issue$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
 }
 
 /**

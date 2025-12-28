@@ -68,10 +68,10 @@ model User {
     updatedAt     DateTime @updatedAt
 
     // Relations
-    projects Project[]
-
-    sessions Session[]
-    accounts Account[]
+    projects      Project[]
+    sessions      Session[]
+    accounts      Account[]
+    notifications Notification[]
 
     @@map("user")
 }
@@ -174,8 +174,9 @@ model Issue {
     syncedAt       DateTime @default(now()) // Last sync with GitHub
 
     // Relations
-    feedback   Feedback        @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
-    activities IssueActivity[]
+    feedback      Feedback        @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+    activities    IssueActivity[]
+    notifications Notification[]
 
     @@map("issue")
 }
@@ -193,4 +194,24 @@ model IssueActivity {
     issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
     @@map("issue_activity")
+}
+
+model Notification {
+    id        String    @id @default(cuid())
+    userId    String
+    issueId   String? // Optional: link to the issue that triggered the notification
+    type      String // issue_state_change, issue_comment, issue_assigned, etc.
+    title     String
+    message   String
+    read      Boolean   @default(false)
+    createdAt DateTime  @default(now())
+    readAt    DateTime?
+
+    // Relations
+    user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    issue Issue? @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([userId, read])
+    @@map("notification")
 }

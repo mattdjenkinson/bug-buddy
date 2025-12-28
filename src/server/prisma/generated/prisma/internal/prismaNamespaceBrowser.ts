@@ -60,7 +60,8 @@ export const ModelName = {
   GitHubIntegration: 'GitHubIntegration',
   WidgetCustomization: 'WidgetCustomization',
   Issue: 'Issue',
-  IssueActivity: 'IssueActivity'
+  IssueActivity: 'IssueActivity',
+  Notification: 'Notification'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -237,6 +238,21 @@ export const IssueActivityScalarFieldEnum = {
 } as const
 
 export type IssueActivityScalarFieldEnum = (typeof IssueActivityScalarFieldEnum)[keyof typeof IssueActivityScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  issueId: 'issueId',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  read: 'read',
+  createdAt: 'createdAt',
+  readAt: 'readAt'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const SortOrder = {
