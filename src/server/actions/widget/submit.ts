@@ -3,6 +3,7 @@
 import { createGitHubIssue } from "@/lib/github";
 import { prisma } from "@/lib/prisma";
 import { widgetSubmitSchema } from "@/lib/schemas";
+import { after } from "next/server";
 import { UAParser } from "ua-parser-js";
 import { z } from "zod";
 
@@ -88,43 +89,56 @@ export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
       },
     });
 
-    // Trigger GitHub issue creation (async, don't wait)
+    // Trigger GitHub issue creation after response is sent
     if (project.githubIntegration) {
-      // Parse user agent to get browser and OS info
-      const userAgentInfo = parseUserAgent(feedback.userAgent);
+      // Capture values before the callback to avoid TypeScript null check issues
+      const githubIntegration = project.githubIntegration;
+      const projectId = project.id;
+      const feedbackTitle = feedback.title;
+      const feedbackDescription = feedback.description;
+      const feedbackUserName = feedback.userName;
+      const feedbackUrl = feedback.url;
+      const feedbackScreenshot = feedback.screenshot;
+      const feedbackAnnotations = feedback.annotations;
+      const feedbackUserAgent = feedback.userAgent;
+      const feedbackId = feedback.id;
 
-      // Create issue body
-      const issueBody = `## Feedback Details
+      after(async () => {
+        try {
+          // Parse user agent to get browser and OS info
+          const userAgentInfo = parseUserAgent(feedbackUserAgent);
 
-${feedback.description}
+          // Create issue body
+          const issueBody = `## Feedback Details
 
-${feedback.userName ? `**Reported by:** ${feedback.userName}` : ""}
-${feedback.url ? `**URL:** ${feedback.url}` : ""}
+${feedbackDescription}
+
+${feedbackUserName ? `**Reported by:** ${feedbackUserName}` : ""}
+${feedbackUrl ? `**URL:** ${feedbackUrl}` : ""}
 ${userAgentInfo ? `\n### Environment\n${userAgentInfo}` : ""}
 
 ### Screenshot
-![Screenshot](${feedback.screenshot})
+![Screenshot](${feedbackScreenshot})
 
-${feedback.annotations ? `\n### Annotations\n\`\`\`json\n${feedback.annotations}\n\`\`\`` : ""}
+${feedbackAnnotations ? `\n### Annotations\n\`\`\`json\n${feedbackAnnotations}\n\`\`\`` : ""}
 
 ---
 
 _Created by [Bug Buddy](https://bugbuddy.dev)_
 `;
 
-      // Create GitHub issue asynchronously (don't block the response)
-      createGitHubIssue(
-        project.id,
-        feedback.title || "Feedback Submission",
-        issueBody,
-        project.githubIntegration.defaultLabels,
-        project.githubIntegration.defaultAssignees,
-      )
-        .then(async (githubIssue) => {
+          const githubIssue = await createGitHubIssue(
+            projectId,
+            feedbackTitle || "Feedback Submission",
+            issueBody,
+            githubIntegration.defaultLabels,
+            githubIntegration.defaultAssignees,
+          );
+
           // Create issue record in database
           await prisma.issue.create({
             data: {
-              feedbackId: feedback.id,
+              feedbackId: feedbackId,
               githubIssueId: githubIssue.number,
               githubIssueUrl: githubIssue.html_url,
               title: githubIssue.title,
@@ -139,11 +153,11 @@ _Created by [Bug Buddy](https://bugbuddy.dev)_
                 .map((l) => l.name),
             },
           });
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Error creating GitHub issue:", error);
           // Don't fail the feedback submission if GitHub issue creation fails
-        });
+        }
+      });
     }
 
     return {
