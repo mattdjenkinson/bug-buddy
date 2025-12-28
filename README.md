@@ -73,7 +73,6 @@ A feedback widget system that captures screenshots, allows annotations, and auto
 1. Go to GitHub Settings > Developer settings > OAuth Apps
 2. Create a new OAuth App (or edit your existing one)
 3. Set Authorization callback URL to: `http://localhost:3000/api/auth/callback/github`
-   - For production, use: `https://yourdomain.com/api/auth/callback/github`
 4. Copy the Client ID and Client Secret to your `.env` file
 
 **Important**: The OAuth app is configured to request the `repo` scope, which allows creating GitHub issues. When users sign in with GitHub, they'll need to authorize your app to access their repositories.

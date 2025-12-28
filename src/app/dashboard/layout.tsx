@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { DashboardBreadcrumb } from "@/components/dashboard/dashboard-breadcrumb";
+import { HexagonIconNegative } from "@/components/icon";
 import { NavUser } from "@/components/nav-user";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -31,6 +32,10 @@ export default function DashboardLayout({
               />
 
               <DashboardBreadcrumb />
+
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-7 items-center justify-center rounded-lg md:hidden">
+                <HexagonIconNegative className="w-5 h-5" />
+              </div>
               <NavUser small className="self-end md:hidden" />
             </div>
           </header>

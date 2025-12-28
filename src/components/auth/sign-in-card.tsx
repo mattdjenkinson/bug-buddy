@@ -9,15 +9,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
-import { Bug, Github } from "lucide-react";
+import { Github } from "lucide-react";
+import { HexagonIconNegative } from "../icon";
 
 export function SignInCard() {
   const wasGithubLastUsed = authClient.isLastUsedLoginMethod("github");
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="flex flex-col items-center space-y-3 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Bug className="h-8 w-8 text-primary" />
+        <div className="bg-sidebar-primary text-sidebar-primary-foreground flex rounded-full size-12 items-center justify-center ">
+          <HexagonIconNegative className="w-9 h-9" />
         </div>
         <div>
           <h1 className="text-4xl font-bold tracking-tight">Bug Buddy</h1>
