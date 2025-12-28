@@ -2,7 +2,13 @@ import { FeedbackList } from "@/components/dashboard/feedback-list";
 import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
 import type { FeedbackWhereInput } from "@/server/prisma/generated/prisma/models";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Feedback | Bug Buddy",
+  description: "View and manage all feedback submissions from your projects",
+};
 
 interface FeedbackPageProps {
   searchParams: Promise<{

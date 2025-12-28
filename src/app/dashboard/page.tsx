@@ -1,7 +1,13 @@
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Bug Buddy",
+  description: "Overview of your bug reports, feedback, and project statistics",
+};
 
 export default async function DashboardPage() {
   const session = await getSession();

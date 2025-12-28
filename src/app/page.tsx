@@ -1,6 +1,12 @@
 import { SignInCard } from "@/components/auth/sign-in-card";
 import { getSession } from "@/lib/auth/helpers";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Sign In | Bug Buddy",
+  description: "Sign in to Bug Buddy to manage your bug reports and feedback",
+};
 
 export default async function Home() {
   const session = await getSession();

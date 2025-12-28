@@ -1,7 +1,14 @@
 import { AnalyticsDashboard } from "@/components/dashboard/analytics-dashboard";
 import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Analytics | Bug Buddy",
+  description:
+    "View analytics and insights about your feedback and bug reports",
+};
 
 export default async function AnalyticsPage() {
   const session = await getSession();

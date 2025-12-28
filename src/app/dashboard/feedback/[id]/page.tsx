@@ -1,7 +1,55 @@
 import { FeedbackDetail } from "@/components/dashboard/feedback-detail";
 import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const session = await getSession();
+  const { id } = await params;
+
+  if (!session?.user) {
+    return {
+      title: "Feedback | Bug Buddy",
+      description: "View feedback details",
+    };
+  }
+
+  const feedback = await prisma.feedback.findFirst({
+    where: {
+      id,
+      project: {
+        userId: session.user.id,
+      },
+    },
+    select: {
+      title: true,
+      description: true,
+      project: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (!feedback) {
+    return {
+      title: "Feedback | Bug Buddy",
+      description: "View feedback details",
+    };
+  }
+
+  return {
+    title: `${feedback.title} | Bug Buddy`,
+    description:
+      feedback.description || `Feedback from ${feedback.project.name}`,
+  };
+}
 
 export default async function FeedbackDetailPage({
   params,

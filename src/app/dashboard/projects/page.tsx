@@ -1,7 +1,13 @@
 import { ProjectsList } from "@/components/dashboard/projects-list";
 import { getSession } from "@/lib/auth/helpers";
 import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Projects | Bug Buddy",
+  description: "Manage your projects and API keys",
+};
 
 interface ProjectsPageProps {
   searchParams: Promise<{ new?: string }>;
