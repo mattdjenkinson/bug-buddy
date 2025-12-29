@@ -1,7 +1,7 @@
 import { FeedbackList } from "@/components/dashboard/feedback-list";
 import { getSession } from "@/lib/auth/helpers";
-import { prisma } from "@/lib/prisma";
-import type { FeedbackWhereInput } from "@/server/prisma/generated/prisma/models";
+import { getUserFeedback } from "@/server/services/feedback.service";
+import { getUserProjectsBasic } from "@/server/services/projects.service";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -30,71 +30,15 @@ export default async function FeedbackPage({
     redirect("/");
   }
 
-  const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
-    select: { id: true, name: true },
-  });
+  const projects = await getUserProjectsBasic(session.user.id);
 
-  // Build where clause for filtering
-  const where: FeedbackWhereInput = {
-    project: {
-      userId: session.user.id,
-    },
-  };
-
-  if (params.projectId && params.projectId !== "all") {
-    where.projectId = params.projectId;
-  }
-
-  if (params.status && params.status !== "all") {
-    where.status = params.status;
-  }
-
-  if (params.title) {
-    where.OR = [
-      { title: { contains: params.title, mode: "insensitive" } },
-      { description: { contains: params.title, mode: "insensitive" } },
-    ];
-  }
-
-  // Build orderBy clause for sorting
-  const sortBy = params.sortBy || "createdAt";
-  const sortOrder = params.sortOrder || "desc";
-
-  let orderBy:
-    | { createdAt?: "asc" | "desc" }
-    | { title?: "asc" | "desc" }
-    | { status?: "asc" | "desc" }
-    | { project: { name: "asc" | "desc" } };
-  if (sortBy === "project") {
-    orderBy = { project: { name: sortOrder } };
-  } else if (sortBy === "title") {
-    orderBy = { title: sortOrder };
-  } else if (sortBy === "status") {
-    orderBy = { status: sortOrder };
-  } else {
-    orderBy = { createdAt: sortOrder };
-  }
-
-  const feedback = await prisma.feedback.findMany({
-    where,
-    include: {
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      issue: {
-        select: {
-          id: true,
-          githubIssueId: true,
-          githubIssueUrl: true,
-          state: true,
-        },
-      },
-    },
-    orderBy,
+  const feedback = await getUserFeedback({
+    userId: session.user.id,
+    projectId: params.projectId,
+    status: params.status,
+    title: params.title,
+    sortBy: params.sortBy,
+    sortOrder: params.sortOrder,
   });
 
   // Transform feedback to match expected type (convert Date to string)

@@ -144,7 +144,7 @@ export function NotificationsBell() {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto flex flex-col gap-1">
           {isLoading ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               Loading...

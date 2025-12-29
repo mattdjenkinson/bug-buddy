@@ -1,6 +1,9 @@
 import { FeedbackDetail } from "@/components/dashboard/feedback-detail";
 import { getSession } from "@/lib/auth/helpers";
-import { prisma } from "@/lib/prisma";
+import {
+  getFeedbackById,
+  getFeedbackMetadata,
+} from "@/server/services/feedback.service";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -19,23 +22,7 @@ export async function generateMetadata({
     };
   }
 
-  const feedback = await prisma.feedback.findFirst({
-    where: {
-      id,
-      project: {
-        userId: session.user.id,
-      },
-    },
-    select: {
-      title: true,
-      description: true,
-      project: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
+  const feedback = await getFeedbackMetadata(session.user.id, id);
 
   if (!feedback) {
     return {
@@ -63,31 +50,7 @@ export default async function FeedbackDetailPage({
     notFound();
   }
 
-  const feedback = await prisma.feedback.findFirst({
-    where: {
-      id,
-      project: {
-        userId: session.user.id,
-      },
-    },
-    include: {
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      issue: {
-        include: {
-          activities: {
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-        },
-      },
-    },
-  });
+  const feedback = await getFeedbackById(session.user.id, id);
 
   if (!feedback) {
     notFound();

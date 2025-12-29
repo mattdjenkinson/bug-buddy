@@ -197,6 +197,8 @@ export const WidgetCustomizationScalarFieldEnum = {
   secondaryColor: 'secondaryColor',
   backgroundColor: 'backgroundColor',
   fontFamily: 'fontFamily',
+  fontUrl: 'fontUrl',
+  fontFileName: 'fontFileName',
   borderRadius: 'borderRadius',
   buttonText: 'buttonText',
   buttonPosition: 'buttonPosition',

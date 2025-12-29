@@ -26,27 +26,35 @@ export async function saveWidgetCustomization(
     }
 
     // Upsert customization
+    const updateData = {
+      primaryColor: validated.primaryColor,
+      secondaryColor: validated.secondaryColor,
+      fontFamily: validated.fontFamily,
+      ...(validated.fontUrl !== undefined && { fontUrl: validated.fontUrl }),
+      ...(validated.fontFileName !== undefined && {
+        fontFileName: validated.fontFileName,
+      }),
+      borderRadius: validated.borderRadius,
+      buttonText: validated.buttonText,
+      buttonPosition: validated.buttonPosition,
+    };
+
+    const createData = {
+      projectId: validated.projectId,
+      primaryColor: validated.primaryColor || "#000000",
+      secondaryColor: validated.secondaryColor || "#ffffff",
+      fontFamily: validated.fontFamily || "system-ui",
+      fontUrl: validated.fontUrl || null,
+      fontFileName: validated.fontFileName || null,
+      borderRadius: validated.borderRadius || "8px",
+      buttonText: validated.buttonText || "Feedback",
+      buttonPosition: validated.buttonPosition || "bottom-right",
+    };
+
     const customization = await prisma.widgetCustomization.upsert({
       where: { projectId: validated.projectId },
-      update: {
-        primaryColor: validated.primaryColor,
-        secondaryColor: validated.secondaryColor,
-        backgroundColor: validated.backgroundColor,
-        fontFamily: validated.fontFamily,
-        borderRadius: validated.borderRadius,
-        buttonText: validated.buttonText,
-        buttonPosition: validated.buttonPosition,
-      },
-      create: {
-        projectId: validated.projectId,
-        primaryColor: validated.primaryColor || "#000000",
-        secondaryColor: validated.secondaryColor || "#ffffff",
-        backgroundColor: validated.backgroundColor || "#ffffff",
-        fontFamily: validated.fontFamily || "system-ui",
-        borderRadius: validated.borderRadius || "8px",
-        buttonText: validated.buttonText || "Feedback",
-        buttonPosition: validated.buttonPosition || "bottom-right",
-      },
+      update: updateData,
+      create: createData,
     });
 
     revalidatePath("/dashboard/settings", "layout");

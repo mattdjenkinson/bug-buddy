@@ -19,7 +19,8 @@ export async function getUserRepositories() {
     if (!account?.accessToken) {
       return {
         success: false,
-        error: "No GitHub account connected. Please sign in with GitHub.",
+        error:
+          "No GitHub account connected. Please connect your GitHub account for repository access. This won't change your login method.",
         repositories: [],
       };
     }

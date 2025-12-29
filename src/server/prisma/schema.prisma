@@ -145,6 +145,8 @@ model WidgetCustomization {
     secondaryColor  String   @default("#ffffff")
     backgroundColor String   @default("#ffffff")
     fontFamily      String   @default("system-ui")
+    fontUrl         String?
+    fontFileName    String?
     borderRadius    String   @default("8px")
     buttonText      String   @default("Feedback")
     buttonPosition  String   @default("bottom-right") // bottom-right, bottom-left, top-right, top-left

@@ -15,7 +15,6 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -41,6 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getStatusBadge } from "@/lib/badge-helpers";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-view-options";
@@ -71,15 +71,6 @@ interface FeedbackListProps {
   projects: Array<{ id: string; name: string }>;
   initialFeedback: Feedback[];
 }
-
-const getStatusBadge = (status: string) => {
-  const variants: Record<string, "default" | "secondary" | "outline"> = {
-    open: "default",
-    closed: "secondary",
-    "in-progress": "outline",
-  };
-  return <Badge variant={variants[status] || "default"}>{status}</Badge>;
-};
 
 export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const router = useRouter();

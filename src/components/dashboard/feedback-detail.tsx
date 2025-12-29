@@ -20,6 +20,7 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -149,6 +150,14 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
 
       if (result.success) {
         toast.success("Issue closed successfully");
+
+        // Track GitHub issue closure
+        posthog.capture("github_issue_closed", {
+          feedback_id: feedback.id,
+          project_id: feedback.project.id,
+          github_issue_id: feedback.issue.githubIssueId,
+        });
+
         router.refresh();
       } else {
         toast.error(result.error || "Failed to close issue");

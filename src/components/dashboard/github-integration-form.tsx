@@ -31,6 +31,7 @@ import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Copy, ExternalLink, RefreshCw } from "lucide-react";
+import posthog from "posthog-js";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -162,6 +163,11 @@ export function GitHubIntegrationForm({
       if (result.webhookSecret) {
         setWebhookSecret(result.webhookSecret);
         toast.success("Webhook secret generated successfully!");
+
+        // Track webhook secret generation
+        posthog.capture("github_webhook_secret_generated", {
+          project_id: projectId,
+        });
       }
     } catch (error) {
       console.error("Error generating webhook secret:", error);
@@ -205,6 +211,19 @@ export function GitHubIntegrationForm({
       }
 
       toast.success("GitHub integration saved successfully!");
+
+      // Track GitHub integration save - key conversion event
+      posthog.capture("github_integration_saved", {
+        project_id: data.projectId,
+        repository: data.repository,
+        has_custom_token: !!data.personalAccessToken,
+        labels_count: data.defaultLabels
+          ? data.defaultLabels.split(",").filter((l) => l.trim()).length
+          : 0,
+        assignees_count: data.defaultAssignees
+          ? data.defaultAssignees.split(",").filter((a) => a.trim()).length
+          : 0,
+      });
     } catch (error) {
       console.error("Error saving GitHub integration:", error);
       toast.error(
@@ -274,8 +293,16 @@ export function GitHubIntegrationForm({
                     {repoError ? (
                       <span>
                         Error: {repoError}.{" "}
-                        {repoError.includes("organization") ||
-                        repoError.includes("Access denied") ? (
+                        {repoError.includes("No GitHub account connected") ||
+                        repoError.includes("sign in with GitHub") ? (
+                          <span>
+                            Please connect your GitHub account first. You can do
+                            this from the dashboard or account settings. This
+                            will only grant repository access and won&apos;t
+                            change your login method.
+                          </span>
+                        ) : repoError.includes("organization") ||
+                          repoError.includes("Access denied") ? (
                           <span>
                             If you don&apos;t see organization repositories, you
                             may need to{" "}
@@ -295,7 +322,7 @@ export function GitHubIntegrationForm({
                         )}
                       </span>
                     ) : (
-                      <div>
+                      <>
                         Select a repository from your GitHub account and
                         organizations. We&apos;ll use your GitHub OAuth token to
                         connect. If you don&apos;t see organization
@@ -309,7 +336,7 @@ export function GitHubIntegrationForm({
                         >
                           GitHub Settings.
                         </a>
-                      </div>
+                      </>
                     )}
                   </FieldDescription>
                   {fieldState.invalid && (

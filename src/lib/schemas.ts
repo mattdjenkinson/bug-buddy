@@ -48,8 +48,9 @@ export const widgetCustomizationSchema = z.object({
   projectId: z.string(),
   primaryColor: z.string(),
   secondaryColor: z.string(),
-  backgroundColor: z.string(),
   fontFamily: z.string(),
+  fontUrl: z.string().optional(),
+  fontFileName: z.string().optional(),
   borderRadius: z.string(),
   buttonText: z.string(),
   buttonPosition: z.string(),
@@ -60,8 +61,9 @@ export const widgetCustomizationUpdateSchema = z.object({
   projectId: z.string(),
   primaryColor: z.string().optional(),
   secondaryColor: z.string().optional(),
-  backgroundColor: z.string().optional(),
   fontFamily: z.string().optional(),
+  fontUrl: z.string().optional().nullable(),
+  fontFileName: z.string().optional().nullable(),
   borderRadius: z.string().optional(),
   buttonText: z.string().optional(),
   buttonPosition: z.string().optional(),
@@ -96,6 +98,11 @@ export const widgetSubmitSchema = z.object({
 // Widget Upload Schema
 export const widgetUploadSchema = z.object({
   image: z.string().min(1, "Image data is required"),
+});
+
+// Font Upload Schema
+export const fontUploadSchema = z.object({
+  font: z.instanceof(File, { message: "Font file is required" }),
 });
 
 // GitHub Issue Schema

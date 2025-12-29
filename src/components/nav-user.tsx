@@ -50,6 +50,7 @@ export function NavUser({
   const handleThemeChange = (newTheme: string) => {
     // Use View Transition API for smooth cross-fade if available
     if (typeof document !== "undefined" && "startViewTransition" in document) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (document as any).startViewTransition(() => {
         setTheme(newTheme);
       });
@@ -120,7 +121,10 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+            <DropdownMenuRadioGroup
+              value={theme}
+              onValueChange={handleThemeChange}
+            >
               <DropdownMenuRadioItem value="light">
                 <Sun />
                 Light

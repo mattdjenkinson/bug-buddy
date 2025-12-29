@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import { useEffect } from "react";
 
 export default function Error({
@@ -22,6 +23,11 @@ export default function Error({
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Error:", error);
+
+    // Track error in PostHog
+    posthog.captureException(error, {
+      error_digest: error.digest,
+    });
   }, [error]);
 
   return (

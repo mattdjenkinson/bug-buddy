@@ -18,6 +18,11 @@ export const auth = betterAuth({
       clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
       scope: ["read:user", "user:email", "repo", "read:org"],
     },
+    google: {
+      prompt: "select_account",
+      clientId: serverEnv.GOOGLE_CLIENT_ID,
+      clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
+    },
   },
   user: {
     deleteUser: {

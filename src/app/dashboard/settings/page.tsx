@@ -1,6 +1,6 @@
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { getSession } from "@/lib/auth/helpers";
-import { prisma } from "@/lib/prisma";
+import { getUserProjectsWithIntegrations } from "@/server/services/projects.service";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -17,13 +17,7 @@ export default async function SettingsPage() {
     redirect("/");
   }
 
-  const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
-    include: {
-      githubIntegration: true,
-      widgetCustomization: true,
-    },
-  });
+  const projects = await getUserProjectsWithIntegrations(session.user.id);
 
   return <SettingsForm projects={projects} />;
 }

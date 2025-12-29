@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { getBaseUrlClient } from "@/lib/base-url.client";
 import { Check, Code, Copy, Settings2 } from "lucide-react";
 import Link from "next/link";
+import posthog from "posthog-js";
 import * as React from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./create-project-dialog";
@@ -43,17 +44,27 @@ export function ProjectsList({
     setProjects([project, ...projects]);
   };
 
-  const copyApiKey = (apiKey: string) => {
+  const copyApiKey = (apiKey: string, projectId: string) => {
     navigator.clipboard.writeText(apiKey);
     setCopiedKey(apiKey);
     setTimeout(() => setCopiedKey(null), 2000);
+
+    // Track API key copy
+    posthog.capture("api_key_copied", {
+      project_id: projectId,
+    });
   };
 
-  const copyEmbedCode = (apiKey: string) => {
+  const copyEmbedCode = (apiKey: string, projectId: string) => {
     const appUrl = getBaseUrlClient();
     const embedCode = `<script src="${appUrl}/widget.js" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
     navigator.clipboard.writeText(embedCode);
     toast.success("Embed code copied to clipboard!");
+
+    // Track embed code copy - key activation step
+    posthog.capture("embed_code_copied", {
+      project_id: projectId,
+    });
   };
 
   return (
@@ -97,7 +108,7 @@ export function ProjectsList({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => copyApiKey(project.apiKey)}
+                    onClick={() => copyApiKey(project.apiKey, project.id)}
                   >
                     {copiedKey === project.apiKey ? (
                       <Check className="h-4 w-4" />
@@ -111,7 +122,7 @@ export function ProjectsList({
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => copyEmbedCode(project.apiKey)}
+                  onClick={() => copyEmbedCode(project.apiKey, project.id)}
                 >
                   <Code className="h-4 w-4" />
                   Copy Embed Code

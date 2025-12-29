@@ -36,8 +36,9 @@ interface SettingsFormProps {
       id: string;
       primaryColor: string;
       secondaryColor: string;
-      backgroundColor: string;
       fontFamily: string;
+      fontUrl: string | null;
+      fontFileName: string | null;
       borderRadius: string;
       buttonText: string;
       buttonPosition: string;

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getProjectByApiKey } from "@/server/services/projects.service";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -8,12 +8,7 @@ export async function GET(
   try {
     const { projectKey } = await params;
 
-    const project = await prisma.project.findUnique({
-      where: { apiKey: projectKey },
-      include: {
-        widgetCustomization: true,
-      },
-    });
+    const project = await getProjectByApiKey(projectKey);
 
     if (!project) {
       return NextResponse.json(
@@ -99,8 +94,9 @@ export async function GET(
           ? {
               primaryColor: project.widgetCustomization.primaryColor,
               secondaryColor: project.widgetCustomization.secondaryColor,
-              backgroundColor: project.widgetCustomization.backgroundColor,
               fontFamily: project.widgetCustomization.fontFamily,
+              fontUrl: project.widgetCustomization.fontUrl,
+              fontFileName: project.widgetCustomization.fontFileName,
               borderRadius: project.widgetCustomization.borderRadius,
               buttonText: project.widgetCustomization.buttonText,
               buttonPosition: project.widgetCustomization.buttonPosition,

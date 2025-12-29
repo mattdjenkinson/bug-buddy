@@ -8,6 +8,7 @@ import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { HexagonIconNegative } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -340,8 +341,9 @@ export default function WidgetEmbedPageContent() {
           href={getBaseUrlClient()}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-4 right-4 text-xs text-muted-foreground hover:text-foreground transition-colors z-50"
+          className="absolute bottom-4 right-4 text-xs text-muted-foreground hover:text-foreground transition-colors z-50 flex items-center gap-2"
         >
+          <HexagonIconNegative className="w-4 h-4" />
           Powered by Bug Buddy
         </Link>
       </div>

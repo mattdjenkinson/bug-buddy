@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "@/components/auth/session-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,26 +24,21 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth/client";
 import { getAccounts } from "@/server/actions/account/get-accounts";
 import { unlinkAccount } from "@/server/actions/account/unlink-account";
-import { LogOut, RefreshCw, Trash2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { initiateGitHubConnection } from "@/server/actions/github/connect-github";
+import { Github, LogOut, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import * as React from "react";
 import { toast } from "sonner";
-
-interface AccountSettingsClientProps {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    image?: string | null;
-  };
-}
 
 export function AccountSettingsClient() {
   const { user } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [accounts, setAccounts] = React.useState<
     Array<{
       id: string;
@@ -59,6 +55,7 @@ export function AccountSettingsClient() {
       ipAddress: string | null;
       userAgent: string | null;
       createdAt: Date | string;
+      isActive?: boolean;
     }>
   >([]);
   const [loading, setLoading] = React.useState(true);
@@ -69,61 +66,95 @@ export function AccountSettingsClient() {
   const { data: currentSession } = authClient.useSession();
 
   // Load accounts and sessions
-  React.useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const [accountsResult, sessionsResponse] = await Promise.all([
-          getAccounts(),
-          authClient.listSessions(),
-        ]);
+  const loadData = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const [accountsResult, sessionsResponse] = await Promise.all([
+        getAccounts(),
+        authClient.listSessions(),
+      ]);
 
-        console.log("SESSIONS RESPONSE", sessionsResponse);
-
-        if (accountsResult.success) {
-          setAccounts(accountsResult.accounts);
-        }
-
-        if (sessionsResponse.data && Array.isArray(sessionsResponse.data)) {
-          // Get current session to identify active session
-          // Try to match by session ID first, then by token
-          const currentSessionId = currentSession?.session?.id || null;
-          const currentSessionToken = currentSession?.session?.token || null;
-
-          const sessionsWithActiveFlag = sessionsResponse.data.map(
-            (s: {
-              id: string;
-              token: string;
-              expiresAt: Date | string;
-              ipAddress?: string | null;
-              userAgent?: string | null;
-              createdAt: Date | string;
-            }) => ({
-              id: s.id,
-              token: s.token,
-              expiresAt: s.expiresAt,
-              ipAddress: s.ipAddress || null,
-              userAgent: s.userAgent || null,
-              createdAt: s.createdAt,
-              isActive: Boolean(
-                (currentSessionId && s.id === currentSessionId) ||
-                (currentSessionToken && s.token === currentSessionToken),
-              ),
-            }),
-          );
-
-          setSessions(sessionsWithActiveFlag);
-        }
-      } catch (error) {
-        console.error("Error loading account data:", error);
-        toast.error("Failed to load account data");
-      } finally {
-        setLoading(false);
+      if (accountsResult.success) {
+        setAccounts(accountsResult.accounts);
       }
-    }
 
-    loadData();
+      if (sessionsResponse.data && Array.isArray(sessionsResponse.data)) {
+        // Get current session to identify active session
+        // Try to match by session ID first, then by token
+        const currentSessionId = currentSession?.session?.id || null;
+        const currentSessionToken = currentSession?.session?.token || null;
+
+        const sessionsWithActiveFlag = sessionsResponse.data.map(
+          (s: {
+            id: string;
+            token: string;
+            expiresAt: Date | string;
+            ipAddress?: string | null;
+            userAgent?: string | null;
+            createdAt: Date | string;
+          }) => ({
+            id: s.id,
+            token: s.token,
+            expiresAt: s.expiresAt,
+            ipAddress: s.ipAddress || null,
+            userAgent: s.userAgent || null,
+            createdAt: s.createdAt,
+            isActive: Boolean(
+              (currentSessionId && s.id === currentSessionId) ||
+              (currentSessionToken && s.token === currentSessionToken),
+            ),
+          }),
+        );
+
+        setSessions(sessionsWithActiveFlag);
+      }
+    } catch (error) {
+      console.error("Error loading account data:", error);
+      toast.error("Failed to load account data");
+    } finally {
+      setLoading(false);
+    }
   }, [currentSession]);
+
+  // Load data on mount
+  React.useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Handle GitHub connection success/error from query params
+  React.useEffect(() => {
+    const githubConnected = searchParams.get("github_connected");
+    const error = searchParams.get("error");
+
+    if (githubConnected === "true") {
+      toast.success("GitHub account connected successfully!");
+
+      // Track GitHub account link
+      posthog.capture("github_account_linked");
+
+      // Remove query param from URL
+      router.replace("/dashboard/account", { scroll: false });
+      // Reload accounts
+      loadData();
+    } else if (error) {
+      const errorMessages: Record<string, string> = {
+        missing_parameters: "Missing required parameters. Please try again.",
+        invalid_state: "Invalid request. Please try again.",
+        token_exchange_failed:
+          "Failed to exchange authorization code. Please try again.",
+        no_access_token: "Failed to get access token. Please try again.",
+        failed_to_fetch_user:
+          "Failed to fetch GitHub user information. Please try again.",
+        connection_failed:
+          "Failed to connect GitHub account. Please try again.",
+      };
+      toast.error(
+        errorMessages[error] || "An error occurred. Please try again.",
+      );
+      // Remove query param from URL
+      router.replace("/dashboard/account", { scroll: false });
+    }
+  }, [searchParams, router, loadData]);
 
   const handleUnlinkAccount = async (accountId: string) => {
     setUnlinking(accountId);
@@ -154,6 +185,10 @@ export function AccountSettingsClient() {
       await authClient.revokeSession({ token });
 
       toast.success("Session revoked successfully");
+
+      // Track session revocation
+      posthog.capture("session_revoked");
+
       // Remove from local state
       setSessions((prev) => prev.filter((s) => s.token !== token));
 
@@ -171,8 +206,12 @@ export function AccountSettingsClient() {
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
+      // Track account deletion - churn event (capture before deleting)
+      posthog.capture("account_deleted");
+
       await authClient.deleteUser();
       toast.success("Account deleted successfully");
+      posthog.reset();
       router.push("/");
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -235,15 +274,23 @@ export function AccountSettingsClient() {
             <FieldGroup>
               <Field>
                 <FieldLabel>Name</FieldLabel>
-                <div className="text-sm text-muted-foreground">
-                  {user?.name || "Not set"}
-                </div>
+                {loading ? (
+                  <Skeleton className="h-5 w-48" />
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    {user?.name || "Not set"}
+                  </div>
+                )}
               </Field>
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <div className="text-sm text-muted-foreground">
-                  {user?.email}
-                </div>
+                {loading ? (
+                  <Skeleton className="h-5 w-64" />
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    {user?.email}
+                  </div>
+                )}
               </Field>
             </FieldGroup>
           </CardContent>
@@ -259,52 +306,100 @@ export function AccountSettingsClient() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading...</div>
-            ) : accounts.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No linked providers found
+              <div className="space-y-4">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <Skeleton className="h-6 w-24 mb-2" />
+                      <Skeleton className="h-5 w-40" />
+                    </div>
+                    <Skeleton className="h-9 w-20" />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="space-y-4">
-                {accounts.map((account) => (
-                  <div
-                    key={account.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {getProviderName(account.providerId)}
-                        </span>
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Linked on {formatDate(account.createdAt)}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUnlinkAccount(account.id)}
-                      disabled={
-                        unlinking === account.id ||
-                        (accounts.length === 1 && unlinking !== account.id)
-                      }
-                      loading={unlinking === account.id}
-                    >
-                      {unlinking === account.id ? (
-                        <RefreshCw className="h-4 w-4" />
-                      ) : (
-                        <X className="h-4 w-4" />
-                      )}
-                      Unlink
-                    </Button>
+                {accounts.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">
+                    No linked providers found
                   </div>
-                ))}
+                ) : (
+                  accounts.map((account) => (
+                    <div
+                      key={account.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {getProviderName(account.providerId)}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Linked on {formatDate(account.createdAt)}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUnlinkAccount(account.id)}
+                        disabled={
+                          unlinking === account.id ||
+                          (accounts.length === 1 && unlinking !== account.id)
+                        }
+                        loading={unlinking === account.id}
+                      >
+                        {unlinking === account.id ? (
+                          <RefreshCw className="h-4 w-4" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                        Unlink
+                      </Button>
+                    </div>
+                  ))
+                )}
                 {accounts.length === 1 && (
                   <div className="text-sm text-amber-600 dark:text-amber-500">
                     You cannot unlink your last provider. Please link another
                     account first or delete your account.
                   </div>
+                )}
+                {accounts.length < 2 && (
+                  <CardContent className="pt-2 border-t px-0">
+                    <div className="text-sm font-medium mb-3">
+                      Link Additional Account
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {!accounts.some((acc) => acc.providerId === "github") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            await initiateGitHubConnection();
+                          }}
+                        >
+                          <Github className="h-4 w-4 mr-2" />
+                          Link GitHub
+                        </Button>
+                      )}
+                      {!accounts.some((acc) => acc.providerId === "google") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            authClient.signIn.social({ provider: "google" })
+                          }
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Link Google
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
                 )}
               </div>
             )}
@@ -321,7 +416,27 @@ export function AccountSettingsClient() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading...</div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                      <div className="space-y-1">
+                        <Skeleton className="h-5 w-40" />
+                        <Skeleton className="h-5 w-48" />
+                        <Skeleton className="h-5 w-48" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-9 w-20" />
+                  </div>
+                ))}
+              </div>
             ) : sessions.length === 0 ? (
               <div className="text-sm text-muted-foreground">
                 No active sessions found
@@ -338,6 +453,14 @@ export function AccountSettingsClient() {
                         <span className="font-medium">
                           {formatUserAgent(session.userAgent)}
                         </span>
+                        {session.isActive && (
+                          <Badge
+                            variant="secondary"
+                            className="w-fit text-[10px]"
+                          >
+                            Current Session
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-sm text-muted-foreground mt-1 space-y-1">
                         {session.ipAddress && (
@@ -352,11 +475,11 @@ export function AccountSettingsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleRevokeSession(session.token)}
-                      disabled={revoking === session.token}
+                      disabled={revoking === session.token || session.isActive}
                       loading={revoking === session.token}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Revoke
+                      {!session.isActive && <LogOut className="h-4 w-4" />}
+                      {session.isActive ? "Current" : "Revoke"}
                     </Button>
                   </div>
                 ))}
@@ -389,7 +512,7 @@ export function AccountSettingsClient() {
                     onClick={() => setShowDeleteDialog(true)}
                     disabled={deleting}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                     Delete Account
                   </Button>
                 </div>

@@ -31,6 +31,8 @@ export type WidgetCustomizationMinAggregateOutputType = {
   secondaryColor: string | null
   backgroundColor: string | null
   fontFamily: string | null
+  fontUrl: string | null
+  fontFileName: string | null
   borderRadius: string | null
   buttonText: string | null
   buttonPosition: string | null
@@ -45,6 +47,8 @@ export type WidgetCustomizationMaxAggregateOutputType = {
   secondaryColor: string | null
   backgroundColor: string | null
   fontFamily: string | null
+  fontUrl: string | null
+  fontFileName: string | null
   borderRadius: string | null
   buttonText: string | null
   buttonPosition: string | null
@@ -59,6 +63,8 @@ export type WidgetCustomizationCountAggregateOutputType = {
   secondaryColor: number
   backgroundColor: number
   fontFamily: number
+  fontUrl: number
+  fontFileName: number
   borderRadius: number
   buttonText: number
   buttonPosition: number
@@ -75,6 +81,8 @@ export type WidgetCustomizationMinAggregateInputType = {
   secondaryColor?: true
   backgroundColor?: true
   fontFamily?: true
+  fontUrl?: true
+  fontFileName?: true
   borderRadius?: true
   buttonText?: true
   buttonPosition?: true
@@ -89,6 +97,8 @@ export type WidgetCustomizationMaxAggregateInputType = {
   secondaryColor?: true
   backgroundColor?: true
   fontFamily?: true
+  fontUrl?: true
+  fontFileName?: true
   borderRadius?: true
   buttonText?: true
   buttonPosition?: true
@@ -103,6 +113,8 @@ export type WidgetCustomizationCountAggregateInputType = {
   secondaryColor?: true
   backgroundColor?: true
   fontFamily?: true
+  fontUrl?: true
+  fontFileName?: true
   borderRadius?: true
   buttonText?: true
   buttonPosition?: true
@@ -190,6 +202,8 @@ export type WidgetCustomizationGroupByOutputType = {
   secondaryColor: string
   backgroundColor: string
   fontFamily: string
+  fontUrl: string | null
+  fontFileName: string | null
   borderRadius: string
   buttonText: string
   buttonPosition: string
@@ -225,6 +239,8 @@ export type WidgetCustomizationWhereInput = {
   secondaryColor?: Prisma.StringFilter<"WidgetCustomization"> | string
   backgroundColor?: Prisma.StringFilter<"WidgetCustomization"> | string
   fontFamily?: Prisma.StringFilter<"WidgetCustomization"> | string
+  fontUrl?: Prisma.StringNullableFilter<"WidgetCustomization"> | string | null
+  fontFileName?: Prisma.StringNullableFilter<"WidgetCustomization"> | string | null
   borderRadius?: Prisma.StringFilter<"WidgetCustomization"> | string
   buttonText?: Prisma.StringFilter<"WidgetCustomization"> | string
   buttonPosition?: Prisma.StringFilter<"WidgetCustomization"> | string
@@ -240,6 +256,8 @@ export type WidgetCustomizationOrderByWithRelationInput = {
   secondaryColor?: Prisma.SortOrder
   backgroundColor?: Prisma.SortOrder
   fontFamily?: Prisma.SortOrder
+  fontUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  fontFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   borderRadius?: Prisma.SortOrder
   buttonText?: Prisma.SortOrder
   buttonPosition?: Prisma.SortOrder
@@ -258,6 +276,8 @@ export type WidgetCustomizationWhereUniqueInput = Prisma.AtLeast<{
   secondaryColor?: Prisma.StringFilter<"WidgetCustomization"> | string
   backgroundColor?: Prisma.StringFilter<"WidgetCustomization"> | string
   fontFamily?: Prisma.StringFilter<"WidgetCustomization"> | string
+  fontUrl?: Prisma.StringNullableFilter<"WidgetCustomization"> | string | null
+  fontFileName?: Prisma.StringNullableFilter<"WidgetCustomization"> | string | null
   borderRadius?: Prisma.StringFilter<"WidgetCustomization"> | string
   buttonText?: Prisma.StringFilter<"WidgetCustomization"> | string
   buttonPosition?: Prisma.StringFilter<"WidgetCustomization"> | string
@@ -273,6 +293,8 @@ export type WidgetCustomizationOrderByWithAggregationInput = {
   secondaryColor?: Prisma.SortOrder
   backgroundColor?: Prisma.SortOrder
   fontFamily?: Prisma.SortOrder
+  fontUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  fontFileName?: Prisma.SortOrderInput | Prisma.SortOrder
   borderRadius?: Prisma.SortOrder
   buttonText?: Prisma.SortOrder
   buttonPosition?: Prisma.SortOrder
@@ -293,6 +315,8 @@ export type WidgetCustomizationScalarWhereWithAggregatesInput = {
   secondaryColor?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
   backgroundColor?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
   fontFamily?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
+  fontUrl?: Prisma.StringNullableWithAggregatesFilter<"WidgetCustomization"> | string | null
+  fontFileName?: Prisma.StringNullableWithAggregatesFilter<"WidgetCustomization"> | string | null
   borderRadius?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
   buttonText?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
   buttonPosition?: Prisma.StringWithAggregatesFilter<"WidgetCustomization"> | string
@@ -306,6 +330,8 @@ export type WidgetCustomizationCreateInput = {
   secondaryColor?: string
   backgroundColor?: string
   fontFamily?: string
+  fontUrl?: string | null
+  fontFileName?: string | null
   borderRadius?: string
   buttonText?: string
   buttonPosition?: string
@@ -321,6 +347,8 @@ export type WidgetCustomizationUncheckedCreateInput = {
   secondaryColor?: string
   backgroundColor?: string
   fontFamily?: string
+  fontUrl?: string | null
+  fontFileName?: string | null
   borderRadius?: string
   buttonText?: string
   buttonPosition?: string
@@ -334,6 +362,8 @@ export type WidgetCustomizationUpdateInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -349,6 +379,8 @@ export type WidgetCustomizationUncheckedUpdateInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -363,6 +395,8 @@ export type WidgetCustomizationCreateManyInput = {
   secondaryColor?: string
   backgroundColor?: string
   fontFamily?: string
+  fontUrl?: string | null
+  fontFileName?: string | null
   borderRadius?: string
   buttonText?: string
   buttonPosition?: string
@@ -376,6 +410,8 @@ export type WidgetCustomizationUpdateManyMutationInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -390,6 +426,8 @@ export type WidgetCustomizationUncheckedUpdateManyInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -409,6 +447,8 @@ export type WidgetCustomizationCountOrderByAggregateInput = {
   secondaryColor?: Prisma.SortOrder
   backgroundColor?: Prisma.SortOrder
   fontFamily?: Prisma.SortOrder
+  fontUrl?: Prisma.SortOrder
+  fontFileName?: Prisma.SortOrder
   borderRadius?: Prisma.SortOrder
   buttonText?: Prisma.SortOrder
   buttonPosition?: Prisma.SortOrder
@@ -423,6 +463,8 @@ export type WidgetCustomizationMaxOrderByAggregateInput = {
   secondaryColor?: Prisma.SortOrder
   backgroundColor?: Prisma.SortOrder
   fontFamily?: Prisma.SortOrder
+  fontUrl?: Prisma.SortOrder
+  fontFileName?: Prisma.SortOrder
   borderRadius?: Prisma.SortOrder
   buttonText?: Prisma.SortOrder
   buttonPosition?: Prisma.SortOrder
@@ -437,6 +479,8 @@ export type WidgetCustomizationMinOrderByAggregateInput = {
   secondaryColor?: Prisma.SortOrder
   backgroundColor?: Prisma.SortOrder
   fontFamily?: Prisma.SortOrder
+  fontUrl?: Prisma.SortOrder
+  fontFileName?: Prisma.SortOrder
   borderRadius?: Prisma.SortOrder
   buttonText?: Prisma.SortOrder
   buttonPosition?: Prisma.SortOrder
@@ -482,6 +526,8 @@ export type WidgetCustomizationCreateWithoutProjectInput = {
   secondaryColor?: string
   backgroundColor?: string
   fontFamily?: string
+  fontUrl?: string | null
+  fontFileName?: string | null
   borderRadius?: string
   buttonText?: string
   buttonPosition?: string
@@ -495,6 +541,8 @@ export type WidgetCustomizationUncheckedCreateWithoutProjectInput = {
   secondaryColor?: string
   backgroundColor?: string
   fontFamily?: string
+  fontUrl?: string | null
+  fontFileName?: string | null
   borderRadius?: string
   buttonText?: string
   buttonPosition?: string
@@ -524,6 +572,8 @@ export type WidgetCustomizationUpdateWithoutProjectInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -537,6 +587,8 @@ export type WidgetCustomizationUncheckedUpdateWithoutProjectInput = {
   secondaryColor?: Prisma.StringFieldUpdateOperationsInput | string
   backgroundColor?: Prisma.StringFieldUpdateOperationsInput | string
   fontFamily?: Prisma.StringFieldUpdateOperationsInput | string
+  fontUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fontFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   borderRadius?: Prisma.StringFieldUpdateOperationsInput | string
   buttonText?: Prisma.StringFieldUpdateOperationsInput | string
   buttonPosition?: Prisma.StringFieldUpdateOperationsInput | string
@@ -553,6 +605,8 @@ export type WidgetCustomizationSelect<ExtArgs extends runtime.Types.Extensions.I
   secondaryColor?: boolean
   backgroundColor?: boolean
   fontFamily?: boolean
+  fontUrl?: boolean
+  fontFileName?: boolean
   borderRadius?: boolean
   buttonText?: boolean
   buttonPosition?: boolean
@@ -568,6 +622,8 @@ export type WidgetCustomizationSelectCreateManyAndReturn<ExtArgs extends runtime
   secondaryColor?: boolean
   backgroundColor?: boolean
   fontFamily?: boolean
+  fontUrl?: boolean
+  fontFileName?: boolean
   borderRadius?: boolean
   buttonText?: boolean
   buttonPosition?: boolean
@@ -583,6 +639,8 @@ export type WidgetCustomizationSelectUpdateManyAndReturn<ExtArgs extends runtime
   secondaryColor?: boolean
   backgroundColor?: boolean
   fontFamily?: boolean
+  fontUrl?: boolean
+  fontFileName?: boolean
   borderRadius?: boolean
   buttonText?: boolean
   buttonPosition?: boolean
@@ -598,6 +656,8 @@ export type WidgetCustomizationSelectScalar = {
   secondaryColor?: boolean
   backgroundColor?: boolean
   fontFamily?: boolean
+  fontUrl?: boolean
+  fontFileName?: boolean
   borderRadius?: boolean
   buttonText?: boolean
   buttonPosition?: boolean
@@ -605,7 +665,7 @@ export type WidgetCustomizationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WidgetCustomizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "primaryColor" | "secondaryColor" | "backgroundColor" | "fontFamily" | "borderRadius" | "buttonText" | "buttonPosition" | "createdAt" | "updatedAt", ExtArgs["result"]["widgetCustomization"]>
+export type WidgetCustomizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "primaryColor" | "secondaryColor" | "backgroundColor" | "fontFamily" | "fontUrl" | "fontFileName" | "borderRadius" | "buttonText" | "buttonPosition" | "createdAt" | "updatedAt", ExtArgs["result"]["widgetCustomization"]>
 export type WidgetCustomizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
 }
@@ -628,6 +688,8 @@ export type $WidgetCustomizationPayload<ExtArgs extends runtime.Types.Extensions
     secondaryColor: string
     backgroundColor: string
     fontFamily: string
+    fontUrl: string | null
+    fontFileName: string | null
     borderRadius: string
     buttonText: string
     buttonPosition: string
@@ -1063,6 +1125,8 @@ export interface WidgetCustomizationFieldRefs {
   readonly secondaryColor: Prisma.FieldRef<"WidgetCustomization", 'String'>
   readonly backgroundColor: Prisma.FieldRef<"WidgetCustomization", 'String'>
   readonly fontFamily: Prisma.FieldRef<"WidgetCustomization", 'String'>
+  readonly fontUrl: Prisma.FieldRef<"WidgetCustomization", 'String'>
+  readonly fontFileName: Prisma.FieldRef<"WidgetCustomization", 'String'>
   readonly borderRadius: Prisma.FieldRef<"WidgetCustomization", 'String'>
   readonly buttonText: Prisma.FieldRef<"WidgetCustomization", 'String'>
   readonly buttonPosition: Prisma.FieldRef<"WidgetCustomization", 'String'>

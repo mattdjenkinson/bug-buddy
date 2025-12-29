@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getStatusBadge as getStatusBadgeHelper } from "@/lib/badge-helpers";
 import {
   AlertCircle,
   Calendar,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GitHubAuthPrompt } from "./github-auth-prompt";
 
 interface Feedback {
   id: string;
@@ -94,16 +96,8 @@ export function DashboardOverview({
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      open: "default",
-      closed: "secondary",
-      "in-progress": "outline",
-    };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    return <Badge variant={variants[status] || "default"}>{status}</Badge>;
-  };
+  // Use shared badge helper
+  const getStatusBadge = getStatusBadgeHelper;
 
   return (
     <div className="space-y-6">
@@ -113,6 +107,9 @@ export function DashboardOverview({
           Overview of your feedback and analytics
         </p>
       </div>
+
+      {/* GitHub Auth Prompt */}
+      <GitHubAuthPrompt />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

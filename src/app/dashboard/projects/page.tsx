@@ -1,6 +1,6 @@
 import { ProjectsList } from "@/components/dashboard/projects-list";
 import { getSession } from "@/lib/auth/helpers";
-import { prisma } from "@/lib/prisma";
+import { getUserProjects } from "@/server/services/projects.service";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -23,19 +23,7 @@ export default async function ProjectsPage({
     redirect("/");
   }
 
-  const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
-    include: {
-      _count: {
-        select: {
-          feedback: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const projects = await getUserProjects(session.user.id);
 
   const projectsWithStringDates = projects.map((project) => ({
     id: project.id,

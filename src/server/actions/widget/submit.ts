@@ -1,6 +1,7 @@
 "use server";
 
 import { createGitHubIssue } from "@/lib/github";
+import { getPostHogClient } from "@/lib/posthog-server";
 import { prisma } from "@/lib/prisma";
 import { widgetSubmitSchema } from "@/lib/schemas";
 import { after } from "next/server";
@@ -159,6 +160,15 @@ _Created by [Bug Buddy](https://bugbuddy.dev)_
         }
       });
     }
+
+    getPostHogClient().capture({
+      distinctId: project.id,
+      event: "widget_feedback_submitted",
+      properties: {
+        projectId: project.id,
+        feedbackId: feedback.id,
+      },
+    });
 
     return {
       success: true,

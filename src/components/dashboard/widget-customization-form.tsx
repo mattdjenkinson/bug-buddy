@@ -23,8 +23,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { widgetCustomizationSchema } from "@/lib/schemas";
+import {
+  CUSTOM_WIDGET_FONT_STYLE_ID,
+  loadCustomFont,
+} from "@/lib/widget-fonts";
 import { saveWidgetCustomization } from "@/server/actions/widget/customization";
+import { deleteFont } from "@/server/actions/widget/delete-font";
+import { uploadFont } from "@/server/actions/widget/upload-font";
 import { zodResolver } from "@hookform/resolvers/zod";
+import posthog from "posthog-js";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,8 +44,9 @@ interface WidgetCustomizationFormProps {
   initialData?: {
     primaryColor: string;
     secondaryColor: string;
-    backgroundColor: string;
     fontFamily: string;
+    fontUrl: string | null;
+    fontFileName: string | null;
     borderRadius: string;
     buttonText: string;
     buttonPosition: string;
@@ -50,6 +58,15 @@ export function WidgetCustomizationForm({
   initialData,
 }: WidgetCustomizationFormProps) {
   const [saving, setSaving] = React.useState(false);
+  const [uploadingFont, setUploadingFont] = React.useState(false);
+  const [removingFont, setRemovingFont] = React.useState(false);
+  const [customFontUrl, setCustomFontUrl] = React.useState<string | null>(
+    initialData?.fontUrl || null,
+  );
+  const [customFontFileName, setCustomFontFileName] = React.useState<
+    string | null
+  >(initialData?.fontFileName || null);
+  const fontInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<WidgetCustomizationForm>({
     resolver: zodResolver(widgetCustomizationSchema),
@@ -57,8 +74,11 @@ export function WidgetCustomizationForm({
       projectId,
       primaryColor: initialData?.primaryColor || "#000000",
       secondaryColor: initialData?.secondaryColor || "#ffffff",
-      backgroundColor: initialData?.backgroundColor || "#ffffff",
-      fontFamily: initialData?.fontFamily || "system-ui",
+      fontFamily: initialData?.fontUrl
+        ? "CustomWidgetFont"
+        : initialData?.fontFamily || "system-ui",
+      fontUrl: initialData?.fontUrl || undefined,
+      fontFileName: initialData?.fontFileName || undefined,
       borderRadius: initialData?.borderRadius || "8px",
       buttonText: initialData?.buttonText || "Feedback",
       buttonPosition: initialData?.buttonPosition || "bottom-right",
@@ -69,28 +89,177 @@ export function WidgetCustomizationForm({
   const watchedValues = form.watch();
 
   React.useEffect(() => {
+    const fontUrl = initialData?.fontUrl || undefined;
+    const fontFileName = initialData?.fontFileName || undefined;
+    const hasCustomFont = !!fontUrl;
+    // If custom font exists, use CustomWidgetFont; otherwise use saved or default
+    const fontFamily = hasCustomFont
+      ? "CustomWidgetFont"
+      : initialData?.fontFamily || "system-ui";
+
     form.reset({
       projectId,
       primaryColor: initialData?.primaryColor || "#000000",
       secondaryColor: initialData?.secondaryColor || "#ffffff",
-      backgroundColor: initialData?.backgroundColor || "#ffffff",
-      fontFamily: initialData?.fontFamily || "system-ui",
+      fontFamily,
+      fontUrl,
+      fontFileName,
       borderRadius: initialData?.borderRadius || "8px",
       buttonText: initialData?.buttonText || "Feedback",
       buttonPosition: initialData?.buttonPosition || "bottom-right",
     });
+    setCustomFontUrl(initialData?.fontUrl || null);
+    setCustomFontFileName(initialData?.fontFileName || null);
   }, [projectId, initialData, form]);
+
+  // Load custom font in preview
+  React.useEffect(() => {
+    if (customFontUrl) {
+      loadCustomFont(customFontUrl).catch((error) => {
+        console.error("Failed to load custom font in preview:", error);
+      });
+    } else {
+      // Remove style element when no custom font
+      const existingStyle = document.getElementById(
+        CUSTOM_WIDGET_FONT_STYLE_ID,
+      );
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      const existingStyle = document.getElementById(
+        CUSTOM_WIDGET_FONT_STYLE_ID,
+      );
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, [customFontUrl]);
+
+  const handleFontUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFont(true);
+    try {
+      const formData = new FormData();
+      formData.append("font", file);
+
+      const result = await uploadFont(formData);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to upload font");
+      }
+
+      if (result.url) {
+        setCustomFontUrl(result.url);
+        setCustomFontFileName(result.fileName || file.name);
+        form.setValue("fontUrl", result.url);
+        form.setValue("fontFileName", result.fileName || file.name);
+        form.setValue("fontFamily", "CustomWidgetFont");
+        toast.success("Font uploaded successfully!");
+      }
+    } catch (error) {
+      console.error("Error uploading font:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to upload font",
+      );
+    } finally {
+      setUploadingFont(false);
+      // Reset input
+      if (fontInputRef.current) {
+        fontInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemoveFont = async () => {
+    const currentFontUrl = customFontUrl;
+
+    if (!currentFontUrl) {
+      return;
+    }
+
+    setRemovingFont(true);
+    try {
+      // Delete from blob storage
+      const deleteResult = await deleteFont(currentFontUrl);
+
+      if (!deleteResult.success) {
+        console.warn("Failed to delete font from storage:", deleteResult.error);
+        // Continue with removal even if blob deletion fails
+      }
+
+      // Update local state
+      setCustomFontUrl(null);
+      setCustomFontFileName(null);
+      form.setValue("fontUrl", undefined);
+      form.setValue("fontFileName", undefined);
+
+      // Reset font family to default if it was CustomWidgetFont
+      const newFontFamily =
+        form.getValues("fontFamily") === "CustomWidgetFont"
+          ? "system-ui"
+          : form.getValues("fontFamily");
+      form.setValue("fontFamily", newFontFamily);
+
+      // Save the changes to the database
+      const currentFormData = form.getValues();
+      const saveResult = await saveWidgetCustomization({
+        projectId: currentFormData.projectId,
+        fontUrl: null, // Explicitly set to null to clear from database
+        fontFileName: null, // Explicitly set to null to clear from database
+        fontFamily: newFontFamily,
+        // Preserve other existing values
+        primaryColor: currentFormData.primaryColor,
+        secondaryColor: currentFormData.secondaryColor,
+        borderRadius: currentFormData.borderRadius,
+        buttonText: currentFormData.buttonText,
+        buttonPosition: currentFormData.buttonPosition,
+      });
+
+      if (!saveResult.success) {
+        throw new Error(saveResult.error || "Failed to save changes");
+      }
+
+      toast.success("Custom font removed");
+    } catch (error) {
+      console.error("Error removing font:", error);
+      toast.error("Failed to remove font. Please try again.");
+    } finally {
+      setRemovingFont(false);
+    }
+  };
 
   const onSubmit = async (data: WidgetCustomizationForm) => {
     setSaving(true);
     try {
-      const result = await saveWidgetCustomization(data);
+      // Ensure fontUrl and fontFileName are included from the current state
+      const submitData = {
+        ...data,
+        fontUrl: customFontUrl || undefined,
+        fontFileName: customFontFileName || undefined,
+      };
+
+      const result = await saveWidgetCustomization(submitData);
 
       if (!result.success) {
         throw new Error(result.error || "Failed to save widget customization");
       }
 
       toast.success("Widget customization saved successfully!");
+
+      // Track widget customization save
+      posthog.capture("widget_customization_saved", {
+        project_id: data.projectId,
+        button_position: data.buttonPosition,
+        has_custom_font: !!customFontUrl,
+      });
     } catch (error) {
       console.error("Error saving widget customization:", error);
       toast.error(
@@ -232,28 +401,24 @@ export function WidgetCustomizationForm({
               </div>
 
               <Controller
-                name="backgroundColor"
+                name="fontFamily"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="backgroundColor">
-                      Background Color
-                    </FieldLabel>
-                    <div className="flex gap-2">
-                      <Input
-                        {...field}
-                        id="backgroundColor"
-                        type="color"
-                        className="w-20 h-10"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <Input
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="#ffffff"
-                        aria-invalid={fieldState.invalid}
-                      />
-                    </div>
+                    <FieldLabel htmlFor="fontFamily">Font Family</FieldLabel>
+                    <Input
+                      {...field}
+                      id="fontFamily"
+                      placeholder="system-ui, Arial, sans-serif"
+                      disabled={!!customFontUrl}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {customFontUrl && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Font family is set to &quot;CustomWidgetFont&quot; for
+                        your custom font
+                      </p>
+                    )}
                     {fieldState.invalid && (
                       <FieldError
                         errors={
@@ -267,30 +432,55 @@ export function WidgetCustomizationForm({
                 )}
               />
 
-              <Controller
-                name="fontFamily"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="fontFamily">Font Family</FieldLabel>
-                    <Input
-                      {...field}
-                      id="fontFamily"
-                      placeholder="system-ui, Arial, sans-serif"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError
-                        errors={
-                          fieldState.error
-                            ? [{ message: fieldState.error.message }]
-                            : undefined
-                        }
+              <Field>
+                <FieldLabel htmlFor="fontUpload">
+                  Custom Font (Optional)
+                </FieldLabel>
+                <div className="space-y-2">
+                  {customFontUrl ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            Custom Font Loaded
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate mt-1">
+                            {customFontFileName || "Custom font"}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveFont}
+                          disabled={uploadingFont || removingFont}
+                          loading={removingFont}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Font family has been set to &quot;CustomWidgetFont&quot;
+                        automatically
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <Input
+                        ref={fontInputRef}
+                        id="fontUpload"
+                        type="file"
+                        accept=".woff,.woff2,.ttf,.otf"
+                        onChange={handleFontUpload}
+                        disabled={uploadingFont}
                       />
-                    )}
-                  </Field>
-                )}
-              />
+                      <p className="text-xs text-muted-foreground">
+                        Supported formats: WOFF, WOFF2, TTF, OTF (max 2MB)
+                      </p>
+                    </>
+                  )}
+                </div>
+              </Field>
 
               <Controller
                 name="borderRadius"
@@ -426,12 +616,16 @@ export function WidgetCustomizationForm({
                     watchedValues.buttonPosition,
                     watchedValues.borderRadius,
                   ),
-                  fontFamily: watchedValues.fontFamily,
+                  fontFamily: customFontUrl
+                    ? "CustomWidgetFont, " +
+                      (watchedValues.fontFamily || "system-ui")
+                    : watchedValues.fontFamily || "system-ui",
                   fontSize: "14px",
                   fontWeight: 500,
                   cursor: "pointer",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                   whiteSpace: "nowrap",
+                  zIndex: 999999,
                 } as React.CSSProperties
               }
             >

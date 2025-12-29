@@ -32,9 +32,11 @@ A feedback widget system that captures screenshots, allows annotations, and auto
    # Better Auth
    BETTER_AUTH_SECRET="your-secret-key-here-change-in-production"
 
-   # GitHub OAuth (for user authentication)
+   # OAuth (for user authentication)
    GITHUB_CLIENT_ID="your-github-client-id"
    GITHUB_CLIENT_SECRET="your-github-client-secret"
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
    # PostHog (optional)
    NEXT_PUBLIC_POSTHOG_KEY=""
@@ -68,18 +70,35 @@ A feedback widget system that captures screenshots, allows annotations, and auto
    pnpm dev
    ```
 
-## GitHub OAuth Setup
+## OAuth Setup
+
+### Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" > "Create Credentials" > "OAuth client ID"
+5. Choose "Web application"
+6. Add authorized redirect URIs:
+   - Development: `http://localhost:3000/api/auth/callback/google`
+   - Production: `https://yourdomain.com/api/auth/callback/google`
+7. Copy the Client ID and Client Secret to your `.env` file
+
+### GitHub OAuth Setup
 
 1. Go to GitHub Settings > Developer settings > OAuth Apps
 2. Create a new OAuth App (or edit your existing one)
-3. Set Authorization callback URL to: `http://localhost:3000/api/auth/callback/github`
+3. **Set Authorization callback URL:**
+   - Development: `http://localhost:3000/api/auth/callback/github`
+   - Production: `https://yourdomain.com/api/auth/callback/github`
+
+   **Note**: This single callback URL handles both authentication and account linking. The system automatically detects which flow to use.
+
 4. Copy the Client ID and Client Secret to your `.env` file
 
 **Important**: The OAuth app is configured to request the `repo` scope, which allows creating GitHub issues. When users sign in with GitHub, they'll need to authorize your app to access their repositories.
 
-1. Go to GitHub Settings > Applications > Authorized OAuth Apps
-2. Find your app and click "Revoke"
-3. Sign out and sign in again to get the new token with `repo` scope
+**Note**: Users can sign in with Google and then link their GitHub account in the account settings to enable GitHub integration features. The account linking uses the same callback URL but with a special parameter to avoid changing the user's login method.
 
 ## GitHub Webhook Setup
 
@@ -116,12 +135,13 @@ The webhook allows Bug Buddy to sync GitHub issue status changes and comments ba
 
 ## Usage
 
-1. Sign in with GitHub at `http://localhost:3000`
-2. Create a project in the dashboard
-3. Copy the embed script from the project page
-4. Add the script to your website
-5. Configure GitHub integration in settings
-6. Start receiving feedback!
+1. Sign in with Google or GitHub at `http://localhost:3000`
+2. If you signed in with Google, you'll be prompted to connect your GitHub account for integration features
+3. Create a project in the dashboard
+4. Copy the embed script from the project page
+5. Add the script to your website
+6. Configure GitHub integration in settings
+7. Start receiving feedback!
 
 ## Widget Embed
 

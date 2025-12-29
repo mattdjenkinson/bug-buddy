@@ -1,6 +1,10 @@
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { getSession } from "@/lib/auth/helpers";
-import { prisma } from "@/lib/prisma";
+import {
+  getUserFeedback,
+  getUserFeedbackStats,
+} from "@/server/services/feedback.service";
+import { getUserProjectCount } from "@/server/services/projects.service";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -17,76 +21,17 @@ export default async function DashboardPage() {
   }
 
   // Check if user has any projects
-  const projectCount = await prisma.project.count({
-    where: { userId: session.user.id },
-  });
-
+  const projectCount = await getUserProjectCount(session.user.id);
   const hasProjects = projectCount > 0;
 
   // Get latest 4 feedback items
-  const latestFeedback = await prisma.feedback.findMany({
-    where: {
-      project: {
-        userId: session.user.id,
-      },
-    },
-    include: {
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      issue: {
-        select: {
-          id: true,
-          githubIssueId: true,
-          githubIssueUrl: true,
-          state: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 4,
+  const latestFeedback = await getUserFeedback({
+    userId: session.user.id,
+    limit: 4,
   });
 
   // Get stats
-  const total = await prisma.feedback.count({
-    where: {
-      project: {
-        userId: session.user.id,
-      },
-    },
-  });
-
-  const open = await prisma.feedback.count({
-    where: {
-      project: {
-        userId: session.user.id,
-      },
-      status: "open",
-    },
-  });
-
-  const inProgress = await prisma.feedback.count({
-    where: {
-      project: {
-        userId: session.user.id,
-      },
-      status: "in-progress",
-    },
-  });
-
-  const closed = await prisma.feedback.count({
-    where: {
-      project: {
-        userId: session.user.id,
-      },
-      status: "closed",
-    },
-  });
+  const stats = await getUserFeedbackStats(session.user.id);
 
   // Transform feedback to match expected type (convert Date to string)
   const transformedFeedback = latestFeedback.map((f) => ({
@@ -97,12 +42,7 @@ export default async function DashboardPage() {
   return (
     <DashboardOverview
       latestFeedback={transformedFeedback}
-      stats={{
-        total,
-        open,
-        inProgress,
-        closed,
-      }}
+      stats={stats}
       hasProjects={hasProjects}
     />
   );

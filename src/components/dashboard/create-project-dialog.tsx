@@ -21,6 +21,7 @@ import { createProjectSchema } from "@/lib/schemas";
 import { createProject } from "@/server/actions/projects/create";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
+import posthog from "posthog-js";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -75,6 +76,14 @@ export function CreateProjectDialog({
       setOpen(false);
       form.reset();
       toast.success("Project created successfully!");
+
+      // Track project creation
+      posthog.capture("project_created", {
+        project_id: result.project.id,
+        project_name: result.project.name,
+        has_description: !!result.project.description,
+      });
+
       onProjectCreated?.(result.project);
     } catch (error) {
       console.error("Error creating project:", error);
