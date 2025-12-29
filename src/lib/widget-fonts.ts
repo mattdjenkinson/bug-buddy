@@ -66,6 +66,9 @@ export function loadCustomFont(
 
     try {
       document.head.appendChild(style);
+      console.log(
+        `Font style element added with id: ${CUSTOM_WIDGET_FONT_STYLE_ID}, font-family: ${fontFamilyName}`,
+      );
     } catch (error) {
       console.error("Error adding style element:", error);
     }

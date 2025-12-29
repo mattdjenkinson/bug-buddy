@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { widgetCustomizationSchema } from "@/lib/schemas";
 import {
+  CUSTOM_WIDGET_FONT_FAMILY,
   CUSTOM_WIDGET_FONT_STYLE_ID,
   loadCustomFont,
 } from "@/lib/widget-fonts";
@@ -75,8 +76,10 @@ export function WidgetCustomizationForm({
       primaryColor: initialData?.primaryColor || "#000000",
       secondaryColor: initialData?.secondaryColor || "#ffffff",
       fontFamily: initialData?.fontUrl
-        ? "CustomWidgetFont"
-        : initialData?.fontFamily || "system-ui",
+        ? CUSTOM_WIDGET_FONT_FAMILY
+        : initialData?.fontFamily === "CustomWidgetFont"
+          ? CUSTOM_WIDGET_FONT_FAMILY
+          : initialData?.fontFamily || "system-ui",
       fontUrl: initialData?.fontUrl || undefined,
       fontFileName: initialData?.fontFileName || undefined,
       borderRadius: initialData?.borderRadius || "8px",
@@ -92,10 +95,14 @@ export function WidgetCustomizationForm({
     const fontUrl = initialData?.fontUrl || undefined;
     const fontFileName = initialData?.fontFileName || undefined;
     const hasCustomFont = !!fontUrl;
-    // If custom font exists, use CustomWidgetFont; otherwise use saved or default
+    // If custom font exists, use CUSTOM_WIDGET_FONT_FAMILY; otherwise use saved or default
+    // Also handle legacy "CustomWidgetFont" name
+    const savedFontFamily = initialData?.fontFamily || "system-ui";
     const fontFamily = hasCustomFont
-      ? "CustomWidgetFont"
-      : initialData?.fontFamily || "system-ui";
+      ? CUSTOM_WIDGET_FONT_FAMILY
+      : savedFontFamily === "CustomWidgetFont"
+        ? CUSTOM_WIDGET_FONT_FAMILY
+        : savedFontFamily;
 
     form.reset({
       projectId,
@@ -115,9 +122,14 @@ export function WidgetCustomizationForm({
   // Load custom font in preview
   React.useEffect(() => {
     if (customFontUrl) {
-      loadCustomFont(customFontUrl).catch((error) => {
-        console.error("Failed to load custom font in preview:", error);
-      });
+      console.log("Loading custom font in preview:", customFontUrl);
+      loadCustomFont(customFontUrl)
+        .then(() => {
+          console.log("Font loaded successfully in preview");
+        })
+        .catch((error) => {
+          console.error("Failed to load custom font in preview:", error);
+        });
     } else {
       // Remove style element when no custom font
       const existingStyle = document.getElementById(
@@ -161,7 +173,7 @@ export function WidgetCustomizationForm({
         setCustomFontFileName(result.fileName || file.name);
         form.setValue("fontUrl", result.url);
         form.setValue("fontFileName", result.fileName || file.name);
-        form.setValue("fontFamily", "CustomWidgetFont");
+        form.setValue("fontFamily", CUSTOM_WIDGET_FONT_FAMILY);
         toast.success("Font uploaded successfully!");
       }
     } catch (error) {
@@ -201,9 +213,9 @@ export function WidgetCustomizationForm({
       form.setValue("fontUrl", undefined);
       form.setValue("fontFileName", undefined);
 
-      // Reset font family to default if it was CustomWidgetFont
+      // Reset font family to default if it was CUSTOM_WIDGET_FONT_FAMILY
       const newFontFamily =
-        form.getValues("fontFamily") === "CustomWidgetFont"
+        form.getValues("fontFamily") === CUSTOM_WIDGET_FONT_FAMILY
           ? "system-ui"
           : form.getValues("fontFamily");
       form.setValue("fontFamily", newFontFamily);
@@ -415,8 +427,8 @@ export function WidgetCustomizationForm({
                     />
                     {customFontUrl && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Font family is set to &quot;CustomWidgetFont&quot; for
-                        your custom font
+                        Font family is set to &quot;{CUSTOM_WIDGET_FONT_FAMILY}
+                        &quot; for your custom font
                       </p>
                     )}
                     {fieldState.invalid && (
@@ -460,8 +472,8 @@ export function WidgetCustomizationForm({
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Font family has been set to &quot;CustomWidgetFont&quot;
-                        automatically
+                        Font family has been set to &quot;
+                        {CUSTOM_WIDGET_FONT_FAMILY}&quot; automatically
                       </p>
                     </div>
                   ) : (
@@ -617,8 +629,7 @@ export function WidgetCustomizationForm({
                     watchedValues.borderRadius,
                   ),
                   fontFamily: customFontUrl
-                    ? "CustomWidgetFont, " +
-                      (watchedValues.fontFamily || "system-ui")
+                    ? `${CUSTOM_WIDGET_FONT_FAMILY}, ${watchedValues.fontFamily || "system-ui"}`
                     : watchedValues.fontFamily || "system-ui",
                   fontSize: "14px",
                   fontWeight: 500,
