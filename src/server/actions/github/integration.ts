@@ -2,9 +2,11 @@
 "use server";
 
 import { requireAuth } from "@/lib/auth/helpers";
+import { createWebhook } from "@/lib/github";
 import { prisma } from "@/lib/prisma";
 import { githubIntegrationSchema } from "@/lib/schemas";
 import { Octokit } from "@octokit/rest";
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -89,6 +91,17 @@ export async function saveGitHubIntegration(
       throw error;
     }
 
+    // Get existing integration to preserve webhook secret if it exists
+    const existingIntegration = await prisma.gitHubIntegration.findUnique({
+      where: { projectId: validated.projectId },
+    });
+
+    // Generate webhook secret if it doesn't exist
+    let webhookSecret = existingIntegration?.webhookSecret;
+    if (!webhookSecret) {
+      webhookSecret = randomBytes(32).toString("hex");
+    }
+
     // Upsert GitHub integration
     const integration = await prisma.gitHubIntegration.upsert({
       where: { projectId: validated.projectId },
@@ -98,6 +111,7 @@ export async function saveGitHubIntegration(
         repositoryName: validated.repositoryName,
         defaultLabels: validated.defaultLabels || [],
         defaultAssignees: validated.defaultAssignees || [],
+        webhookSecret, // Ensure webhook secret is set
       },
       create: {
         projectId: validated.projectId,
@@ -106,11 +120,43 @@ export async function saveGitHubIntegration(
         repositoryName: validated.repositoryName,
         defaultLabels: validated.defaultLabels || [],
         defaultAssignees: validated.defaultAssignees || [],
+        webhookSecret, // Generate and store webhook secret
       },
     });
 
+    // Automatically create webhook if it doesn't exist
+    // This will fail gracefully if the token doesn't have admin:repo_hook scope
+    const webhookResult = await createWebhook(validated.projectId);
+    if (!webhookResult.success && webhookResult.error) {
+      // If webhook creation fails due to permissions, we still save the integration
+      // but return a warning message
+      const isPermissionError = webhookResult.error.includes("admin:repo_hook");
+
+      revalidatePath("/dashboard/settings", "layout");
+
+      if (isPermissionError) {
+        return {
+          success: true,
+          integration,
+          warning: `Integration saved, but webhook could not be created automatically: ${webhookResult.error}. Please create the webhook manually or provide a Personal Access Token with 'admin:repo_hook' scope.`,
+        };
+      }
+
+      // For other errors, still save but warn
+      return {
+        success: true,
+        integration,
+        warning: `Integration saved, but webhook could not be created: ${webhookResult.error}. Please create the webhook manually.`,
+      };
+    }
+
     revalidatePath("/dashboard/settings", "layout");
-    return { success: true, integration };
+    return {
+      success: true,
+      integration,
+      webhookCreated: webhookResult.success,
+      webhookId: webhookResult.webhookId,
+    };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {

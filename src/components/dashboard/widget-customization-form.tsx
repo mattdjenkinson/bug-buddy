@@ -52,11 +52,13 @@ interface WidgetCustomizationFormProps {
     buttonText: string;
     buttonPosition: string;
   } | null;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export function WidgetCustomizationForm({
   projectId,
   initialData,
+  onDirtyChange,
 }: WidgetCustomizationFormProps) {
   const [saving, setSaving] = React.useState(false);
   const [uploadingFont, setUploadingFont] = React.useState(false);
@@ -118,6 +120,12 @@ export function WidgetCustomizationForm({
     setCustomFontUrl(initialData?.fontUrl || null);
     setCustomFontFileName(initialData?.fontFileName || null);
   }, [projectId, initialData, form]);
+
+  // Track dirty state and notify parent
+  const isDirty = form.formState.isDirty;
+  React.useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   // Load custom font in preview
   React.useEffect(() => {
@@ -265,6 +273,9 @@ export function WidgetCustomizationForm({
       }
 
       toast.success("Widget customization saved successfully!");
+
+      // Reset dirty state after successful save
+      form.reset(form.getValues(), { keepValues: true });
 
       // Track widget customization save
       posthog.capture("widget_customization_saved", {

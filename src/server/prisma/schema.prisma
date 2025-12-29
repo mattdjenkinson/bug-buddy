@@ -129,6 +129,7 @@ model GitHubIntegration {
     defaultLabels       String[] @default([])
     defaultAssignees    String[] @default([])
     webhookSecret       String?
+    webhookId           Int? // GitHub webhook ID
     createdAt           DateTime @default(now())
     updatedAt           DateTime @updatedAt
 

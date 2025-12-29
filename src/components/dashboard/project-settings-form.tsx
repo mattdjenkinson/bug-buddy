@@ -235,7 +235,7 @@ export function ProjectSettingsForm({
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name" className="flex items-center gap-2">
-                  Project Name {saving && <Spinner />}
+                  Project Name {saving && <Spinner className="size-3" />}
                 </FieldLabel>
                 <div className="flex gap-2 items-center">
                   <Input
@@ -259,14 +259,15 @@ export function ProjectSettingsForm({
 
           <div className="mt-6 space-y-4 border-t pt-6">
             <Field>
-              <FieldLabel>Allowed Domains</FieldLabel>
+              <FieldLabel className="flex items-center gap-2">
+                Allowed Domains{" "}
+                {savingDomains && <Spinner className="size-3" />}
+              </FieldLabel>
               <FieldDescription>
                 Specify which domains can use your widget. Leave empty to allow
                 all domains. Enter domains without protocol (e.g., example.com).
               </FieldDescription>
-              {savingDomains && (
-                <span className="text-sm text-muted-foreground">Saving...</span>
-              )}
+
               <div className="mt-2 space-y-2">
                 {form.watch("allowedDomains").map((domain, index) => (
                   <div key={index} className="flex gap-2 items-center">
@@ -342,7 +343,9 @@ export function ProjectSettingsForm({
 
           <div className="mt-6 border-t pt-6">
             <Field>
-              <FieldLabel>API Key</FieldLabel>
+              <FieldLabel className="flex items-center gap-2">
+                API Key {refreshing && <Spinner className="size-3" />}
+              </FieldLabel>
               <div className="flex gap-2">
                 <Input
                   value={currentApiKey}

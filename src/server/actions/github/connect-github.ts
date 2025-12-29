@@ -22,7 +22,7 @@ export async function initiateGitHubConnection() {
   const params = new URLSearchParams({
     client_id: serverEnv.GITHUB_CLIENT_ID,
     redirect_uri: `${baseUrl}/api/auth/callback/github`,
-    scope: "read:user user:email repo read:org",
+    scope: "read:user user:email repo read:org admin:repo_hook",
     state: `link_account:${state}:${session.user.id}`, // Prefix with link_account to identify this flow
   });
 

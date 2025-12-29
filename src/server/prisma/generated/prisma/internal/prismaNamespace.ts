@@ -1370,6 +1370,7 @@ export const GitHubIntegrationScalarFieldEnum = {
   defaultLabels: 'defaultLabels',
   defaultAssignees: 'defaultAssignees',
   webhookSecret: 'webhookSecret',
+  webhookId: 'webhookId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

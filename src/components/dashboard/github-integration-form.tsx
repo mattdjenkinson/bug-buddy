@@ -29,8 +29,15 @@ import { githubIntegrationFormSchema } from "@/lib/schemas";
 import { generateWebhookSecret } from "@/server/actions/github/generate-webhook-secret";
 import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
+import { verifyWebhook } from "@/server/actions/github/verify-webhook";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Copy, ExternalLink, RefreshCw } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  ExternalLink,
+  RefreshCw,
+} from "lucide-react";
 import posthog from "posthog-js";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -49,11 +56,13 @@ interface GitHubIntegrationFormProps {
     defaultAssignees: string[];
     webhookSecret: string | null;
   } | null;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 export function GitHubIntegrationForm({
   projectId,
   initialData,
+  onDirtyChange,
 }: GitHubIntegrationFormProps) {
   const [saving, setSaving] = React.useState(false);
   const [loadingRepos, setLoadingRepos] = React.useState(false);
@@ -73,6 +82,16 @@ export function GitHubIntegrationForm({
   );
   const [copiedWebhookSecret, setCopiedWebhookSecret] = React.useState(false);
   const [generatingSecret, setGeneratingSecret] = React.useState(false);
+  const [webhookStatus, setWebhookStatus] = React.useState<{
+    configured: boolean;
+    checking: boolean;
+    error?: string;
+    details?: {
+      url: string;
+      events: string[];
+      active: boolean;
+    };
+  } | null>(null);
 
   const initialRepository = initialData
     ? `${initialData.repositoryOwner}/${initialData.repositoryName}`
@@ -124,6 +143,12 @@ export function GitHubIntegrationForm({
     });
     setWebhookSecret(initialData?.webhookSecret || null);
   }, [projectId, initialData, form]);
+
+  // Track dirty state and notify parent
+  const isDirty = form.formState.isDirty;
+  React.useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const webhookUrl = `${getBaseUrlClient()}/api/github/webhook`;
   const selectedRepository = form.watch("repository");
@@ -181,6 +206,55 @@ export function GitHubIntegrationForm({
     }
   };
 
+  const handleVerifyWebhook = async () => {
+    setWebhookStatus({ configured: false, checking: true });
+    try {
+      const result = await verifyWebhook({ projectId });
+      if (!result.success) {
+        throw new Error(result.error || "Failed to verify webhook");
+      }
+
+      // Type guard: when success is true, result has configured property
+      const verifiedResult = result as {
+        success: true;
+        configured: boolean;
+        webhookId?: number;
+        error?: string;
+        details?: {
+          url: string;
+          events: string[];
+          active: boolean;
+        };
+      };
+
+      setWebhookStatus({
+        configured: verifiedResult.configured || false,
+        checking: false,
+        error: verifiedResult.error,
+        details: verifiedResult.details,
+      });
+
+      if (verifiedResult.configured) {
+        toast.success("Webhook is properly configured!");
+      } else {
+        toast.warning(
+          verifiedResult.error || "Webhook is not properly configured",
+        );
+      }
+    } catch (error) {
+      console.error("Error verifying webhook:", error);
+      setWebhookStatus({
+        configured: false,
+        checking: false,
+        error:
+          error instanceof Error ? error.message : "Failed to verify webhook",
+      });
+      toast.error(
+        error instanceof Error ? error.message : "Failed to verify webhook",
+      );
+    }
+  };
+
   const onSubmit = async (data: GitHubIntegrationForm) => {
     setSaving(true);
     try {
@@ -210,7 +284,23 @@ export function GitHubIntegrationForm({
         throw new Error(result.error || "Failed to save GitHub integration");
       }
 
-      toast.success("GitHub integration saved successfully!");
+      // Show warning if webhook creation failed
+      if (result.warning) {
+        toast.warning(result.warning, { duration: 10000 });
+      } else if (result.webhookCreated) {
+        toast.success(
+          "GitHub integration saved and webhook created successfully!",
+        );
+        // Automatically verify webhook status after creation
+        setTimeout(() => {
+          handleVerifyWebhook();
+        }, 1000);
+      } else {
+        toast.success("GitHub integration saved successfully!");
+      }
+
+      // Reset dirty state after successful save
+      form.reset(form.getValues(), { keepValues: true });
 
       // Track GitHub integration save - key conversion event
       posthog.capture("github_integration_saved", {
@@ -369,7 +459,15 @@ export function GitHubIntegrationForm({
                   />
                   <FieldDescription>
                     Optional. If provided, this token will be used instead of
-                    your OAuth token. Create a token with repo permissions at{" "}
+                    your OAuth token. Create a token with{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                      repo
+                    </code>{" "}
+                    and{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                      admin:repo_hook
+                    </code>{" "}
+                    scopes at{" "}
                     <a
                       href="https://github.com/settings/tokens"
                       target="_blank"
@@ -378,6 +476,11 @@ export function GitHubIntegrationForm({
                     >
                       GitHub Settings
                     </a>
+                    . The{" "}
+                    <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                      admin:repo_hook
+                    </code>{" "}
+                    scope is required for automatic webhook creation.
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError
@@ -445,157 +548,229 @@ export function GitHubIntegrationForm({
                 </Field>
               )}
             />
-
-            <Button type="submit" disabled={saving} loading={saving}>
-              Save GitHub Integration
-            </Button>
           </FieldGroup>
-        </form>
 
-        {(selectedRepository || initialData) && (
-          <>
-            <Separator className="my-6" />
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold">Webhook Setup</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Configure a webhook in GitHub to sync issue status changes and
-                  comments back to Bug Buddy.
-                </p>
-              </div>
-
-              <Field>
-                <FieldLabel>Webhook URL</FieldLabel>
-                <div className="flex gap-2">
-                  <Input
-                    value={webhookUrl}
-                    readOnly
-                    className="font-mono text-sm max-w-xs"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={copyWebhookUrl}
-                  >
-                    {copiedWebhookUrl ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
+          {(selectedRepository || initialData) && (
+            <>
+              <Separator className="my-6" />
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Webhook Setup</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Configure a webhook in GitHub to sync issue status changes
+                    and comments back to Bug Buddy.
+                  </p>
                 </div>
-                <FieldDescription>
-                  Copy this URL and add it as a webhook in your GitHub
-                  repository settings.
-                </FieldDescription>
-              </Field>
 
-              <Field>
-                <FieldLabel>Webhook Secret</FieldLabel>
-                <div className="flex gap-2">
-                  <Input
-                    value={webhookSecret || ""}
-                    readOnly
-                    type="password"
-                    placeholder={
-                      webhookSecret
-                        ? "••••••••••••••••"
-                        : "No secret generated yet"
-                    }
-                    className="font-mono text-sm max-w-xs"
-                  />
-                  {webhookSecret && (
+                <Field>
+                  <FieldLabel>Webhook URL</FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={webhookUrl}
+                      readOnly
+                      className="font-mono text-sm max-w-xs"
+                    />
                     <Button
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={copyWebhookSecret}
+                      onClick={copyWebhookUrl}
                     >
-                      {copiedWebhookSecret ? (
+                      {copiedWebhookUrl ? (
                         <Check className="h-4 w-4" />
                       ) : (
                         <Copy className="h-4 w-4" />
                       )}
                     </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGenerateWebhookSecret}
-                    disabled={generatingSecret}
-                    loading={generatingSecret}
-                  >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    {webhookSecret ? "Refresh" : "Generate"}
-                  </Button>
-                </div>
-                <FieldDescription>
-                  {webhookSecret
-                    ? "Copy this secret and paste it in the GitHub webhook secret field for security."
-                    : "Generate a webhook secret to secure your webhook endpoint. Copy and paste it in GitHub when setting up the webhook."}
-                </FieldDescription>
-              </Field>
+                  </div>
+                  <FieldDescription>
+                    Copy this URL and add it as a webhook in your GitHub
+                    repository settings.
+                  </FieldDescription>
+                </Field>
 
-              <div className="space-y-2">
-                <FieldLabel>Setup Instructions</FieldLabel>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    Go to your repository settings:{" "}
-                    {githubWebhookSettingsUrl ? (
-                      <a
-                        href={githubWebhookSettingsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline inline-flex items-center gap-1"
+                <Field>
+                  <FieldLabel>Webhook Secret</FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={webhookSecret || ""}
+                      readOnly
+                      type="password"
+                      placeholder={
+                        webhookSecret
+                          ? "••••••••••••••••"
+                          : "No secret generated yet"
+                      }
+                      className="font-mono text-sm max-w-xs"
+                    />
+                    {webhookSecret && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={copyWebhookSecret}
                       >
-                        {selectedRepository ||
-                          `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
-                        Settings
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {selectedRepository ||
-                          `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
-                        Settings
-                      </span>
+                        {copiedWebhookSecret ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
                     )}
-                  </li>
-                  <li>Click &quot;Add webhook&quot;</li>
-                  <li>Paste the webhook URL above</li>
-                  <li>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGenerateWebhookSecret}
+                      disabled={generatingSecret}
+                      loading={generatingSecret}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      {webhookSecret ? "Refresh" : "Generate"}
+                    </Button>
+                  </div>
+                  <FieldDescription>
                     {webhookSecret
-                      ? "Paste the webhook secret above in the Secret field"
-                      : "Generate a webhook secret above and paste it in the Secret field"}
-                  </li>
-                  <li>
-                    Set Content type to:{" "}
-                    <code className="px-1 py-0.5 bg-muted rounded text-xs">
-                      application/json
-                    </code>
-                  </li>
-                  <li>
-                    Select events: <strong>Issues</strong> and{" "}
-                    <strong>Issue comments</strong>
-                  </li>
-                  <li>Click &quot;Add webhook&quot;</li>
-                </ol>
-              </div>
+                      ? "Copy this secret and paste it in the GitHub webhook secret field for security."
+                      : "Generate a webhook secret to secure your webhook endpoint. Copy and paste it in GitHub when setting up the webhook."}
+                  </FieldDescription>
+                </Field>
 
-              <div className="rounded-lg bg-muted/50 p-4 text-sm">
-                <p className="font-medium mb-1">What does the webhook do?</p>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>
-                    Syncs issue status changes (closed/reopened) to Bug Buddy
-                  </li>
-                  <li>Syncs comments from GitHub issues to Bug Buddy</li>
-                  <li>Keeps your dashboard up-to-date with GitHub activity</li>
-                </ul>
+                <Field>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Webhook Status</FieldLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleVerifyWebhook}
+                      disabled={webhookStatus?.checking}
+                      loading={webhookStatus?.checking}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Verify
+                    </Button>
+                  </div>
+                  {webhookStatus && (
+                    <div className="mt-2">
+                      {webhookStatus.checking ? (
+                        <p className="text-sm text-muted-foreground">
+                          Checking webhook status...
+                        </p>
+                      ) : webhookStatus.configured ? (
+                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                          <Check className="h-4 w-4" />
+                          <span>Webhook is properly configured</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                            <AlertCircle className="h-4 w-4" />
+                            <span>
+                              {webhookStatus.error ||
+                                "Webhook is not properly configured"}
+                            </span>
+                          </div>
+                          {webhookStatus.details && (
+                            <div className="ml-6 space-y-1 text-xs text-muted-foreground">
+                              <p>
+                                URL:{" "}
+                                <code className="px-1 py-0.5 bg-muted rounded">
+                                  {webhookStatus.details.url}
+                                </code>
+                              </p>
+                              <p>
+                                Events:{" "}
+                                {webhookStatus.details.events.join(", ")}
+                              </p>
+                              <p>
+                                Active:{" "}
+                                {webhookStatus.details.active ? "Yes" : "No"}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <FieldDescription>
+                    Verify that the webhook is properly configured in your
+                    GitHub repository. The webhook will be automatically created
+                    when you save the integration if your token has the required
+                    permissions.
+                  </FieldDescription>
+                </Field>
+
+                <div className="space-y-2">
+                  <FieldLabel>Setup Instructions</FieldLabel>
+                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                    <li>
+                      Go to your repository settings:{" "}
+                      {githubWebhookSettingsUrl ? (
+                        <a
+                          href={githubWebhookSettingsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline inline-flex items-center gap-1"
+                        >
+                          {selectedRepository ||
+                            `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
+                          Settings
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {selectedRepository ||
+                            `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
+                          Settings
+                        </span>
+                      )}
+                    </li>
+                    <li>Click &quot;Add webhook&quot;</li>
+                    <li>Paste the webhook URL above</li>
+                    <li>
+                      {webhookSecret
+                        ? "Paste the webhook secret above in the Secret field"
+                        : "Generate a webhook secret above and paste it in the Secret field"}
+                    </li>
+                    <li>
+                      Set Content type to:{" "}
+                      <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                        application/json
+                      </code>
+                    </li>
+                    <li>
+                      Select events: <strong>Issues</strong> and{" "}
+                      <strong>Issue comments</strong>
+                    </li>
+                    <li>Click &quot;Add webhook&quot;</li>
+                  </ol>
+                </div>
+
+                <div className="rounded-lg bg-muted/50 p-4 text-sm">
+                  <p className="font-medium mb-1">What does the webhook do?</p>
+                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                    <li>
+                      Syncs issue status changes (closed/reopened) to Bug Buddy
+                    </li>
+                    <li>Syncs comments from GitHub issues to Bug Buddy</li>
+                    <li>
+                      Keeps your dashboard up-to-date with GitHub activity
+                    </li>
+                  </ul>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  loading={saving}
+                  className="mt-4"
+                >
+                  Save GitHub Integration
+                </Button>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </form>
       </CardContent>
     </Card>
   );

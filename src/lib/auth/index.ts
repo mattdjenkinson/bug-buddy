@@ -16,7 +16,7 @@ export const auth = betterAuth({
     github: {
       clientId: serverEnv.GITHUB_CLIENT_ID,
       clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
-      scope: ["read:user", "user:email", "repo", "read:org"],
+      scope: ["read:user", "user:email", "repo", "read:org", "admin:repo_hook"],
     },
     google: {
       prompt: "select_account",

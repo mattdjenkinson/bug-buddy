@@ -3,6 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -50,8 +58,72 @@ export function SettingsForm({ projects }: SettingsFormProps) {
   const [selectedProject, setSelectedProject] = React.useState<string>(
     projects[0]?.id || "",
   );
+  const [activeTab, setActiveTab] = React.useState<string>("project");
+  const [pendingTab, setPendingTab] = React.useState<string | null>(null);
+  const [showUnsavedDialog, setShowUnsavedDialog] = React.useState(false);
+  const [githubFormDirty, setGithubFormDirty] = React.useState(false);
+  const [widgetFormDirty, setWidgetFormDirty] = React.useState(false);
 
   const selectedProjectData = projects.find((p) => p.id === selectedProject);
+
+  // Reset dirty state when project changes
+  React.useEffect(() => {
+    setGithubFormDirty(false);
+    setWidgetFormDirty(false);
+  }, [selectedProject]);
+
+  const handleTabChange = (value: string) => {
+    // Check if current tab has unsaved changes
+    const currentTabHasChanges =
+      (activeTab === "github" && githubFormDirty) ||
+      (activeTab === "widget" && widgetFormDirty);
+
+    if (currentTabHasChanges) {
+      setPendingTab(value);
+      setShowUnsavedDialog(true);
+    } else {
+      setActiveTab(value);
+    }
+  };
+
+  const handleConfirmNavigation = () => {
+    if (pendingTab) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+    // Reset dirty state for the tab we're leaving
+    if (activeTab === "github") {
+      setGithubFormDirty(false);
+    } else if (activeTab === "widget") {
+      setWidgetFormDirty(false);
+    }
+    setShowUnsavedDialog(false);
+  };
+
+  const handleCancelNavigation = () => {
+    setPendingTab(null);
+    setShowUnsavedDialog(false);
+  };
+
+  // Warn on browser navigation if there are unsaved changes
+  React.useEffect(() => {
+    const hasUnsavedChanges = githubFormDirty || widgetFormDirty;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    if (hasUnsavedChanges) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [githubFormDirty, widgetFormDirty]);
 
   // Show empty state if no projects
   if (projects.length === 0) {
@@ -102,7 +174,11 @@ export function SettingsForm({ projects }: SettingsFormProps) {
         </SelectContent>
       </Select>
 
-      <Tabs defaultValue="project" className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="space-y-4"
+      >
         <div className="overflow-x-auto -mx-1 px-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <TabsList className="inline-flex min-w-fit ">
             <TabsTrigger value="project">Project Settings</TabsTrigger>
@@ -126,6 +202,7 @@ export function SettingsForm({ projects }: SettingsFormProps) {
           <GitHubIntegrationForm
             projectId={selectedProject}
             initialData={selectedProjectData?.githubIntegration || null}
+            onDirtyChange={setGithubFormDirty}
           />
         </TabsContent>
 
@@ -133,9 +210,30 @@ export function SettingsForm({ projects }: SettingsFormProps) {
           <WidgetCustomizationForm
             projectId={selectedProject}
             initialData={selectedProjectData?.widgetCustomization || null}
+            onDirtyChange={setWidgetFormDirty}
           />
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Are you sure you want to leave? Your
+              changes will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelNavigation}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmNavigation}>
+              Discard Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
