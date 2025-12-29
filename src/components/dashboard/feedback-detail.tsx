@@ -1,5 +1,6 @@
 "use client";
 
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -418,9 +419,9 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
                           </span>
                         </div>
                         {activity.content && activity.type === "comment" && (
-                          <p className="text-muted-foreground mt-1 wrap-break-word">
-                            {activity.content}
-                          </p>
+                          <div className="mt-1">
+                            <MarkdownRenderer content={activity.content} />
+                          </div>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(activity.createdAt).toLocaleString()}
