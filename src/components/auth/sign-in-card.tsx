@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
 import { Github } from "lucide-react";
+import Link from "next/link";
 import posthog from "posthog-js";
 import { HexagonIconNegative } from "../icon";
 import { Badge } from "../ui/badge";
@@ -55,7 +56,7 @@ export function SignInCard() {
         </div>
       </div>
 
-      <Card className="border-2 shadow-lg">
+      <Card className=" shadow-lg bg-background">
         <CardHeader className="space-y-1 pb-4">
           <CardTitle className="text-2xl font-semibold text-center">
             {wasGithubLastUsed || wasGoogleLastUsed
@@ -109,7 +110,9 @@ export function SignInCard() {
             Continue with Google
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            By signing in, you agree to our terms of service and privacy policy
+            By signing in, you agree to our{" "}
+            <Link href="/terms">terms of service</Link> and{" "}
+            <Link href="/privacy">privacy policy</Link>
           </p>
         </CardContent>
       </Card>
