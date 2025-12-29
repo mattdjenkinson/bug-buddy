@@ -39,7 +39,14 @@ import { Spinner } from "../ui/spinner";
 
 const projectSettingsSchema = z.object({
   name: z.string().min(1, "Project name is required"),
-  allowedDomains: z.array(z.string()).default([]),
+  allowedDomains: z.array(
+    z
+      .string()
+      .regex(
+        DOMAIN_REGEX,
+        "Invalid domain format. Please use format like example.com",
+      ),
+  ),
 });
 
 type ProjectSettingsForm = z.infer<typeof projectSettingsSchema>;
