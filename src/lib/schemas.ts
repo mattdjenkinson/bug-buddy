@@ -6,10 +6,23 @@ export const createProjectSchema = z.object({
   description: z.string().optional(),
 });
 
+// Domain validation regex: matches valid domain names (e.g., example.com, subdomain.example.com)
+export const DOMAIN_REGEX =
+  /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
 export const updateProjectSchema = z.object({
   projectId: z.string(),
   name: z.string().min(1),
-  allowedDomains: z.array(z.string()).optional(),
+  allowedDomains: z
+    .array(
+      z
+        .string()
+        .regex(
+          DOMAIN_REGEX,
+          "Invalid domain format. Please use format like example.com",
+        ),
+    )
+    .optional(),
 });
 
 export const deleteProjectSchema = z.object({

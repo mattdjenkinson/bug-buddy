@@ -24,6 +24,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { DOMAIN_REGEX } from "@/lib/schemas";
 import { deleteProject } from "@/server/actions/projects/delete";
 import { refreshApiKey } from "@/server/actions/projects/refresh-api-key";
 import { updateProject } from "@/server/actions/projects/update";
@@ -66,6 +67,40 @@ export function ProjectSettingsForm({
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
   const [newDomain, setNewDomain] = React.useState("");
   const [savingDomains, setSavingDomains] = React.useState(false);
+  const [domainError, setDomainError] = React.useState<string | null>(null);
+
+  const validateDomain = (domain: string): string | null => {
+    const trimmed = domain.trim();
+    if (!trimmed) {
+      return "Domain cannot be empty";
+    }
+    if (!DOMAIN_REGEX.test(trimmed)) {
+      return "Please enter a valid domain (e.g., example.com)";
+    }
+    return null;
+  };
+
+  const handleAddDomain = async () => {
+    const domain = newDomain.trim();
+    const error = validateDomain(domain);
+
+    if (error) {
+      setDomainError(error);
+      return;
+    }
+
+    setDomainError(null);
+    const current = form.getValues("allowedDomains");
+    if (current.includes(domain)) {
+      setDomainError("This domain is already in the list");
+      return;
+    }
+
+    const newDomains = [...current, domain];
+    form.setValue("allowedDomains", newDomains);
+    setNewDomain("");
+    await saveAllowedDomains(newDomains);
+  };
 
   const form = useForm<ProjectSettingsForm>({
     resolver: zodResolver(projectSettingsSchema),
@@ -294,48 +329,42 @@ export function ProjectSettingsForm({
                     </Button>
                   </div>
                 ))}
-                <div className="flex gap-2">
-                  <Input
-                    value={newDomain}
-                    onChange={(e) => setNewDomain(e.target.value)}
-                    className="max-w-xs"
-                    placeholder="example.com"
-                    onKeyDown={async (e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const domain = newDomain.trim();
-                        if (domain) {
-                          const current = form.getValues("allowedDomains");
-                          if (!current.includes(domain)) {
-                            const newDomains = [...current, domain];
-                            form.setValue("allowedDomains", newDomains);
-                            setNewDomain("");
-                            await saveAllowedDomains(newDomains);
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1 max-w-xs">
+                      <Input
+                        value={newDomain}
+                        onChange={(e) => {
+                          setNewDomain(e.target.value);
+                          // Clear error when user starts typing
+                          if (domainError) {
+                            setDomainError(null);
                           }
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                    onClick={async () => {
-                      const domain = newDomain.trim();
-                      if (domain) {
-                        const current = form.getValues("allowedDomains");
-                        if (!current.includes(domain)) {
-                          const newDomains = [...current, domain];
-                          form.setValue("allowedDomains", newDomains);
-                          setNewDomain("");
-                          await saveAllowedDomains(newDomains);
-                        }
-                      }
-                    }}
-                    disabled={savingDomains}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                        }}
+                        className={domainError ? "border-destructive" : ""}
+                        placeholder="example.com"
+                        aria-invalid={!!domainError}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            await handleAddDomain();
+                          }
+                        }}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      type="button"
+                      variant="outline"
+                      onClick={handleAddDomain}
+                      disabled={savingDomains}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {domainError && (
+                    <FieldError errors={[{ message: domainError }]} />
+                  )}
                 </div>
               </div>
             </Field>

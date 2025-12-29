@@ -27,7 +27,7 @@
     "db:studio": "prisma studio --config=src/server/prisma/prisma.config.ts"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
+    "@hookform/resolvers": "^5.2.2",
     "@octokit/rest": "^21.0.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
