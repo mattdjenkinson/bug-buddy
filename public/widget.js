@@ -132,16 +132,11 @@
               if (data.customization.buttonPosition) {
                 config.position = data.customization.buttonPosition;
               }
-              // Load custom font if provided
-              console.log("Customization data:", data.customization);
+
               if (
                 data.customization.fontUrl &&
                 data.customization.fontUrl !== null
               ) {
-                console.log(
-                  "Custom font URL found:",
-                  data.customization.fontUrl,
-                );
                 config.fontUrl = data.customization.fontUrl;
                 // Ensure fontFamily is set to CustomWidgetFont if custom font exists
                 if (config.fontFamily !== CUSTOM_WIDGET_FONT_FAMILY) {
@@ -149,7 +144,6 @@
                 }
                 loadCustomFont(data.customization.fontUrl)
                   .then(() => {
-                    console.log("Custom font loaded, creating widget");
                     createWidget();
                   })
                   .catch((error) => {
@@ -470,6 +464,7 @@
 
   // Open embed iframe
   function openEmbedFrame(screenshot) {
+    console.log("Loading Bug Buddy embed frame");
     const iframe = document.createElement("iframe");
     iframe.id = "bug-buddy-iframe";
     // Don't include screenshot in URL to avoid 431 error (Request Header Fields Too Large)
