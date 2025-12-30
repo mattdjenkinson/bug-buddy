@@ -25,12 +25,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useGitHubConnectionStatus } from "@/hooks/use-github-connection-status";
 import { authClient } from "@/lib/auth/client";
 import { getAccounts } from "@/server/actions/account/get-accounts";
 import { unlinkAccount } from "@/server/actions/account/unlink-account";
 import { initiateGitHubConnection } from "@/server/actions/github/connect-github";
 import { Github, LogOut, Plus, RefreshCw, Trash2, X } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
 import * as React from "react";
 import { toast } from "sonner";
@@ -38,7 +39,6 @@ import { toast } from "sonner";
 export function AccountSettingsClient() {
   const { user } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [accounts, setAccounts] = React.useState<
     Array<{
       id: string;
@@ -122,39 +122,7 @@ export function AccountSettingsClient() {
   }, [loadData]);
 
   // Handle GitHub connection success/error from query params
-  React.useEffect(() => {
-    const githubConnected = searchParams.get("github_connected");
-    const error = searchParams.get("error");
-
-    if (githubConnected === "true") {
-      toast.success("GitHub account connected successfully!");
-
-      // Track GitHub account link
-      posthog.capture("github_account_linked");
-
-      // Remove query param from URL
-      router.replace("/dashboard/account", { scroll: false });
-      // Reload accounts
-      loadData();
-    } else if (error) {
-      const errorMessages: Record<string, string> = {
-        missing_parameters: "Missing required parameters. Please try again.",
-        invalid_state: "Invalid request. Please try again.",
-        token_exchange_failed:
-          "Failed to exchange authorization code. Please try again.",
-        no_access_token: "Failed to get access token. Please try again.",
-        failed_to_fetch_user:
-          "Failed to fetch GitHub user information. Please try again.",
-        connection_failed:
-          "Failed to connect GitHub account. Please try again.",
-      };
-      toast.error(
-        errorMessages[error] || "An error occurred. Please try again.",
-      );
-      // Remove query param from URL
-      router.replace("/dashboard/account", { scroll: false });
-    }
-  }, [searchParams, router, loadData]);
+  useGitHubConnectionStatus(loadData);
 
   const handleUnlinkAccount = async (accountId: string) => {
     setUnlinking(accountId);

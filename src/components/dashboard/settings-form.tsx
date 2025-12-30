@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FolderPlus } from "lucide-react";
 import Link from "next/link";
+import { useQueryState } from "nuqs";
 import * as React from "react";
 import { GitHubIntegrationForm } from "./github-integration-form";
 import { ProjectSettingsForm } from "./project-settings-form";
@@ -55,22 +56,105 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ projects }: SettingsFormProps) {
-  const [selectedProject, setSelectedProject] = React.useState<string>(
-    projects[0]?.id || "",
-  );
-  const [activeTab, setActiveTab] = React.useState<string>("project");
+  // Use nuqs for URL state management
+  const [urlProject, setUrlProject] = useQueryState("project", {
+    defaultValue: projects[0]?.id || "",
+  });
+  const [urlTab, setUrlTab] = useQueryState("tab", {
+    defaultValue: "project",
+  });
+
   const [pendingTab, setPendingTab] = React.useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = React.useState(false);
   const [githubFormDirty, setGithubFormDirty] = React.useState(false);
   const [widgetFormDirty, setWidgetFormDirty] = React.useState(false);
 
+  // Validate project exists in projects array
+  React.useEffect(() => {
+    if (urlProject && !projects.some((p) => p.id === urlProject)) {
+      // Invalid project, reset to first project
+      const firstProjectId = projects[0]?.id || "";
+      if (firstProjectId) {
+        setUrlProject(firstProjectId);
+      }
+    }
+  }, [urlProject, projects, setUrlProject]);
+
+  // Validate tab is one of the valid tabs
+  React.useEffect(() => {
+    const validTabs = ["project", "github", "widget"];
+    if (urlTab && !validTabs.includes(urlTab)) {
+      // Invalid tab, reset to default
+      setUrlTab(null); // null will use the default value "project"
+    }
+  }, [urlTab, setUrlTab]);
+
+  // Use validated values
+  const selectedProject =
+    urlProject && projects.some((p) => p.id === urlProject)
+      ? urlProject
+      : projects[0]?.id || "";
+
+  const activeTab = (() => {
+    const validTabs = ["project", "github", "widget"];
+    return urlTab && validTabs.includes(urlTab) ? urlTab : "project";
+  })();
+
   const selectedProjectData = projects.find((p) => p.id === selectedProject);
+
+  // Track previous active tab to detect external URL changes
+  const prevActiveTabRef = React.useRef(activeTab);
+  const isInternalChangeRef = React.useRef(false);
+
+  // Handle tab changes from URL (e.g., browser back/forward, direct links)
+  // Only allow tab change if no unsaved changes
+  React.useEffect(() => {
+    const validTabs = ["project", "github", "widget"];
+    const currentTab =
+      urlTab && validTabs.includes(urlTab) ? urlTab : "project";
+
+    // Skip if this is an internal change we initiated
+    if (isInternalChangeRef.current) {
+      isInternalChangeRef.current = false;
+      prevActiveTabRef.current = currentTab;
+      return;
+    }
+
+    // Only check if tab actually changed externally
+    if (currentTab !== prevActiveTabRef.current) {
+      const hasUnsavedChanges =
+        (prevActiveTabRef.current === "github" && githubFormDirty) ||
+        (prevActiveTabRef.current === "widget" && widgetFormDirty);
+
+      if (hasUnsavedChanges) {
+        // Revert the URL change if there are unsaved changes
+        const previousTab = prevActiveTabRef.current;
+        isInternalChangeRef.current = true;
+        setUrlTab(previousTab === "project" ? null : previousTab);
+        setPendingTab(currentTab);
+        setShowUnsavedDialog(true);
+      } else {
+        // Update the ref to the new tab
+        prevActiveTabRef.current = currentTab;
+      }
+    }
+  }, [urlTab, githubFormDirty, widgetFormDirty, setUrlTab]);
+
+  // Update ref when activeTab changes (from user interaction)
+  React.useEffect(() => {
+    prevActiveTabRef.current = activeTab;
+  }, [activeTab]);
 
   // Reset dirty state when project changes
   React.useEffect(() => {
     setGithubFormDirty(false);
     setWidgetFormDirty(false);
   }, [selectedProject]);
+
+  // Handle project selection change
+  const handleProjectChange = (projectId: string) => {
+    setUrlProject(projectId);
+  };
 
   const handleTabChange = (value: string) => {
     // Check if current tab has unsaved changes
@@ -82,13 +166,19 @@ export function SettingsForm({ projects }: SettingsFormProps) {
       setPendingTab(value);
       setShowUnsavedDialog(true);
     } else {
-      setActiveTab(value);
+      // Mark as internal change to avoid triggering the external change effect
+      isInternalChangeRef.current = true;
+      // Only set tab if it's not "project" (nuqs will remove it from URL if null)
+      setUrlTab(value === "project" ? null : value);
     }
   };
 
   const handleConfirmNavigation = () => {
     if (pendingTab) {
-      setActiveTab(pendingTab);
+      // Mark as internal change to avoid triggering the external change effect
+      isInternalChangeRef.current = true;
+      // Only set tab if it's not "project" (nuqs will remove it from URL if null)
+      setUrlTab(pendingTab === "project" ? null : pendingTab);
       setPendingTab(null);
     }
     // Reset dirty state for the tab we're leaving
@@ -161,7 +251,7 @@ export function SettingsForm({ projects }: SettingsFormProps) {
         <h1 className="text-3xl font-bold">Settings</h1>
       </div>
 
-      <Select value={selectedProject} onValueChange={setSelectedProject}>
+      <Select value={selectedProject} onValueChange={handleProjectChange}>
         <SelectTrigger className="w-[300px]">
           <SelectValue placeholder="Select a project" />
         </SelectTrigger>

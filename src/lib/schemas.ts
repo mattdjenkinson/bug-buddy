@@ -4,6 +4,7 @@ import { z } from "zod";
 export const createProjectSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().optional(),
+  repository: z.string().min(1, "Repository is required"),
 });
 
 // Domain validation regex: matches valid domain names (e.g., example.com, subdomain.example.com)

@@ -554,87 +554,6 @@ export function GitHubIntegrationForm({
             <>
               <Separator className="my-6" />
               <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Webhook Setup</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Configure a webhook in GitHub to sync issue status changes
-                    and comments back to Bug Buddy.
-                  </p>
-                </div>
-
-                <Field>
-                  <FieldLabel>Webhook URL</FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
-                      value={webhookUrl}
-                      readOnly
-                      className="font-mono text-sm max-w-xs"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={copyWebhookUrl}
-                    >
-                      {copiedWebhookUrl ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <FieldDescription>
-                    Copy this URL and add it as a webhook in your GitHub
-                    repository settings.
-                  </FieldDescription>
-                </Field>
-
-                <Field>
-                  <FieldLabel>Webhook Secret</FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
-                      value={webhookSecret || ""}
-                      readOnly
-                      type="password"
-                      placeholder={
-                        webhookSecret
-                          ? "••••••••••••••••"
-                          : "No secret generated yet"
-                      }
-                      className="font-mono text-sm max-w-xs"
-                    />
-                    {webhookSecret && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={copyWebhookSecret}
-                      >
-                        {copiedWebhookSecret ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleGenerateWebhookSecret}
-                      disabled={generatingSecret}
-                      loading={generatingSecret}
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      {webhookSecret ? "Refresh" : "Generate"}
-                    </Button>
-                  </div>
-                  <FieldDescription>
-                    {webhookSecret
-                      ? "Copy this secret and paste it in the GitHub webhook secret field for security."
-                      : "Generate a webhook secret to secure your webhook endpoint. Copy and paste it in GitHub when setting up the webhook."}
-                  </FieldDescription>
-                </Field>
-
                 <Field>
                   <div className="flex items-center justify-between">
                     <FieldLabel>Webhook Status</FieldLabel>
@@ -700,64 +619,162 @@ export function GitHubIntegrationForm({
                   </FieldDescription>
                 </Field>
 
-                <div className="space-y-2">
-                  <FieldLabel>Setup Instructions</FieldLabel>
-                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                    <li>
-                      Go to your repository settings:{" "}
-                      {githubWebhookSettingsUrl ? (
-                        <a
-                          href={githubWebhookSettingsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline inline-flex items-center gap-1"
-                        >
-                          {selectedRepository ||
-                            `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
-                          Settings
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          {selectedRepository ||
-                            `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
-                          Settings
-                        </span>
-                      )}
-                    </li>
-                    <li>Click &quot;Add webhook&quot;</li>
-                    <li>Paste the webhook URL above</li>
-                    <li>
-                      {webhookSecret
-                        ? "Paste the webhook secret above in the Secret field"
-                        : "Generate a webhook secret above and paste it in the Secret field"}
-                    </li>
-                    <li>
-                      Set Content type to:{" "}
-                      <code className="px-1 py-0.5 bg-muted rounded text-xs">
-                        application/json
-                      </code>
-                    </li>
-                    <li>
-                      Select events: <strong>Issues</strong> and{" "}
-                      <strong>Issue comments</strong>
-                    </li>
-                    <li>Click &quot;Add webhook&quot;</li>
-                  </ol>
-                </div>
+                {webhookStatus &&
+                  !webhookStatus.configured &&
+                  !webhookStatus.checking && (
+                    <>
+                      <Separator />
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-lg font-semibold">
+                            Manual Webhook Setup
+                          </h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Configure a webhook in GitHub to sync issue status
+                            changes and comments back to Bug Buddy.
+                          </p>
+                        </div>
 
-                <div className="rounded-lg bg-muted/50 p-4 text-sm">
-                  <p className="font-medium mb-1">What does the webhook do?</p>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>
-                      Syncs issue status changes (closed/reopened) to Bug Buddy
-                    </li>
-                    <li>Syncs comments from GitHub issues to Bug Buddy</li>
-                    <li>
-                      Keeps your dashboard up-to-date with GitHub activity
-                    </li>
-                  </ul>
-                </div>
+                        <Field>
+                          <FieldLabel>Webhook URL</FieldLabel>
+                          <div className="flex gap-2">
+                            <Input
+                              value={webhookUrl}
+                              readOnly
+                              className="font-mono text-sm max-w-xs"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={copyWebhookUrl}
+                            >
+                              {copiedWebhookUrl ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                          <FieldDescription>
+                            Copy this URL and add it as a webhook in your GitHub
+                            repository settings.
+                          </FieldDescription>
+                        </Field>
+
+                        <Field>
+                          <FieldLabel>Webhook Secret</FieldLabel>
+                          <div className="flex gap-2">
+                            <Input
+                              value={webhookSecret || ""}
+                              readOnly
+                              type="password"
+                              placeholder={
+                                webhookSecret
+                                  ? "••••••••••••••••"
+                                  : "No secret generated yet"
+                              }
+                              className="font-mono text-sm max-w-xs"
+                            />
+                            {webhookSecret && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={copyWebhookSecret}
+                              >
+                                {copiedWebhookSecret ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleGenerateWebhookSecret}
+                              disabled={generatingSecret}
+                              loading={generatingSecret}
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              {webhookSecret ? "Refresh" : "Generate"}
+                            </Button>
+                          </div>
+                          <FieldDescription>
+                            {webhookSecret
+                              ? "Copy this secret and paste it in the GitHub webhook secret field for security."
+                              : "Generate a webhook secret to secure your webhook endpoint. Copy and paste it in GitHub when setting up the webhook."}
+                          </FieldDescription>
+                        </Field>
+
+                        <div className="space-y-2">
+                          <FieldLabel>Setup Instructions</FieldLabel>
+                          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                            <li>
+                              Go to your repository settings:{" "}
+                              {githubWebhookSettingsUrl ? (
+                                <a
+                                  href={githubWebhookSettingsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline inline-flex items-center gap-1"
+                                >
+                                  {selectedRepository ||
+                                    `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
+                                  Settings
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {selectedRepository ||
+                                    `${initialData?.repositoryOwner}/${initialData?.repositoryName}`}{" "}
+                                  Settings
+                                </span>
+                              )}
+                            </li>
+                            <li>Click &quot;Add webhook&quot;</li>
+                            <li>Paste the webhook URL above</li>
+                            <li>
+                              {webhookSecret
+                                ? "Paste the webhook secret above in the Secret field"
+                                : "Generate a webhook secret above and paste it in the Secret field"}
+                            </li>
+                            <li>
+                              Set Content type to:{" "}
+                              <code className="px-1 py-0.5 bg-muted rounded text-xs">
+                                application/json
+                              </code>
+                            </li>
+                            <li>
+                              Select events: <strong>Issues</strong> and{" "}
+                              <strong>Issue comments</strong>
+                            </li>
+                            <li>Click &quot;Add webhook&quot;</li>
+                          </ol>
+                        </div>
+
+                        <div className="rounded-lg bg-muted/50 p-4 text-sm">
+                          <p className="font-medium mb-1">
+                            What does the webhook do?
+                          </p>
+                          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                            <li>
+                              Syncs issue status changes (closed/reopened) to
+                              Bug Buddy
+                            </li>
+                            <li>
+                              Syncs comments from GitHub issues to Bug Buddy
+                            </li>
+                            <li>
+                              Keeps your dashboard up-to-date with GitHub
+                              activity
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                 <Button
                   type="submit"

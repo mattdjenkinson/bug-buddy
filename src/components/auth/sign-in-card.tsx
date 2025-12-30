@@ -9,11 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
-import { Github } from "lucide-react";
+import { AlertCircle, Github } from "lucide-react";
 import Link from "next/link";
+import { useQueryState } from "nuqs";
 import posthog from "posthog-js";
 import { useTransition } from "react";
 import { HexagonIconNegative } from "../icon";
+import { Alert, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 
 // Google icon SVG component
@@ -42,6 +44,9 @@ function GoogleIcon() {
 
 export function SignInCard() {
   const [isPending, startTransition] = useTransition();
+  const [error] = useQueryState("error");
+  const [errorDescription] = useQueryState("error_description");
+  const errorMessage = error ? `${error}: ${errorDescription || ""}` : null;
   const wasGithubLastUsed = authClient.isLastUsedLoginMethod("github");
   const wasGoogleLastUsed = authClient.isLastUsedLoginMethod("google");
 
@@ -118,6 +123,12 @@ export function SignInCard() {
             <GoogleIcon />
             Continue with Google
           </Button>
+          {errorMessage && (
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>{errorMessage}</AlertTitle>
+            </Alert>
+          )}
           <p className="text-center text-xs text-muted-foreground">
             By signing in, you agree to our{" "}
             <Link href="/terms">terms of service</Link> and{" "}

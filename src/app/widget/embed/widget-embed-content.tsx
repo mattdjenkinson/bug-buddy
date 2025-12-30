@@ -3,7 +3,7 @@
 import { submitFeedback } from "@/server/actions/widget/submit";
 import { uploadImage } from "@/server/actions/widget/upload";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,9 +37,12 @@ import { toast } from "sonner";
 type FormValues = z.infer<typeof widgetSubmitFormSchema>;
 
 export default function WidgetEmbedPageContent() {
-  const searchParams = useSearchParams();
-  const projectKey = searchParams.get("projectKey") || "";
-  const url = searchParams.get("url") || "";
+  const [projectKey] = useQueryState("projectKey", {
+    defaultValue: "",
+  });
+  const [url] = useQueryState("url", {
+    defaultValue: "",
+  });
 
   const [screenshot, setScreenshot] = React.useState<string | null>(null);
   const [isClosing, setIsClosing] = React.useState(false);

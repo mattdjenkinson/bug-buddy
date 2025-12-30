@@ -32,6 +32,12 @@ export default async function ProjectsPage({
     apiKey: project.apiKey,
     createdAt: project.createdAt.toISOString(),
     _count: project._count,
+    githubIntegration: project.githubIntegration
+      ? {
+          repositoryOwner: project.githubIntegration.repositoryOwner,
+          repositoryName: project.githubIntegration.repositoryName,
+        }
+      : null,
   }));
 
   const shouldOpenDialog = newParam === "true" || projects.length === 0;

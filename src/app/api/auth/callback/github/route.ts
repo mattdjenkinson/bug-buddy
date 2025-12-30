@@ -31,10 +31,18 @@ export async function GET(request: NextRequest) {
       const state = searchParams.get("state");
       const error = searchParams.get("error");
 
+      // Extract redirect URL from state if available, otherwise default
+      // State format: "link_account:stateToken:userId|redirectUrl" or "link_account:stateToken:userId" (legacy)
+      const stateParts = state?.split("|") || [];
+      const redirectUrl = stateParts[1]
+        ? decodeURIComponent(stateParts[1])
+        : "/dashboard";
+
+      // Check for OAuth errors first
       if (error) {
         return NextResponse.redirect(
           new URL(
-            `/dashboard/account?error=${encodeURIComponent(error)}`,
+            `${redirectUrl}?error=${encodeURIComponent(error)}`,
             request.url,
           ),
         );
@@ -42,15 +50,16 @@ export async function GET(request: NextRequest) {
 
       if (!code || !state) {
         return NextResponse.redirect(
-          new URL("/dashboard/account?error=missing_parameters", request.url),
+          new URL(`${redirectUrl}?error=missing_parameters`, request.url),
         );
       }
 
-      // Verify state contains the user ID (state format: "link_account:stateToken:userId")
-      const [, , userId] = state.split(":");
+      // Verify state contains the user ID
+      const statePrefix = stateParts[0];
+      const [, , userId] = statePrefix.split(":");
       if (userId !== session.user.id) {
         return NextResponse.redirect(
-          new URL("/dashboard/account?error=invalid_state", request.url),
+          new URL(`${redirectUrl}?error=invalid_state`, request.url),
         );
       }
 
@@ -73,10 +82,7 @@ export async function GET(request: NextRequest) {
 
       if (!tokenResponse.ok) {
         return NextResponse.redirect(
-          new URL(
-            "/dashboard/account?error=token_exchange_failed",
-            request.url,
-          ),
+          new URL(`${redirectUrl}?error=token_exchange_failed`, request.url),
         );
       }
 
@@ -85,7 +91,7 @@ export async function GET(request: NextRequest) {
 
       if (!accessToken) {
         return NextResponse.redirect(
-          new URL("/dashboard/account?error=no_access_token", request.url),
+          new URL(`${redirectUrl}?error=no_access_token`, request.url),
         );
       }
 
@@ -99,7 +105,7 @@ export async function GET(request: NextRequest) {
 
       if (!userResponse.ok) {
         return NextResponse.redirect(
-          new URL("/dashboard/account?error=failed_to_fetch_user", request.url),
+          new URL(`${redirectUrl}?error=failed_to_fetch_user`, request.url),
         );
       }
 
@@ -138,15 +144,22 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      // Redirect back to account settings with success
+      // Redirect back with success (redirectUrl already extracted above)
       return NextResponse.redirect(
-        new URL("/dashboard/account?github_connected=true", request.url),
+        new URL(`${redirectUrl}?github_connected=true`, request.url),
       );
     } catch (error) {
       console.error("Error in GitHub account linking callback:", error);
+
+      // Try to extract redirect URL from state for error redirect
+      const stateParts = state?.split("|") || [];
+      const redirectUrl = stateParts[1]
+        ? decodeURIComponent(stateParts[1])
+        : "/dashboard";
+
       return NextResponse.redirect(
         new URL(
-          `/dashboard/account?error=${encodeURIComponent("connection_failed")}`,
+          `${redirectUrl}?error=${encodeURIComponent("connection_failed")}`,
           request.url,
         ),
       );

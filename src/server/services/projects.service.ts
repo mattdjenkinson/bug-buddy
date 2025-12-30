@@ -9,6 +9,12 @@ export async function getUserProjects(userId: string) {
           feedback: true,
         },
       },
+      githubIntegration: {
+        select: {
+          repositoryOwner: true,
+          repositoryName: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",

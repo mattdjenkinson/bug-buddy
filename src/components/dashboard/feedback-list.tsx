@@ -11,7 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { ExternalLink, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useQueryState } from "nuqs";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -73,9 +74,25 @@ interface FeedbackListProps {
 
 export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [limit, setLimit] = React.useState(10);
   const [offset, setOffset] = React.useState(0);
+
+  // Use nuqs for URL state management
+  const [urlProjectId, setUrlProjectId] = useQueryState("projectId", {
+    defaultValue: "all",
+  });
+  const [urlStatus, setUrlStatus] = useQueryState("status", {
+    defaultValue: "all",
+  });
+  const [urlTitle, setUrlTitle] = useQueryState("title", {
+    defaultValue: "",
+  });
+  const [urlSortBy, setUrlSortBy] = useQueryState("sortBy", {
+    defaultValue: "",
+  });
+  const [urlSortOrder, setUrlSortOrder] = useQueryState("sortOrder", {
+    defaultValue: "desc",
+  });
 
   // Apply client-side pagination to the feedback array
   const paginatedFeedback = React.useMemo(() => {
@@ -84,14 +101,14 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
 
   const feedback = paginatedFeedback;
 
-  // Get filter values from URL params
-  const selectedProject = searchParams.get("projectId") || "all";
-  const selectedStatus = searchParams.get("status") || "all";
-  const titleFilterFromUrl = searchParams.get("title") || "";
+  // Get filter values from URL state
+  const selectedProject = urlProjectId || "all";
+  const selectedStatus = urlStatus || "all";
+  const titleFilterFromUrl = urlTitle || "";
 
-  // Get sorting from URL params
-  const sortBy = searchParams.get("sortBy") || "";
-  const sortOrder = searchParams.get("sortOrder") || "desc";
+  // Get sorting from URL state
+  const sortBy = urlSortBy || "";
+  const sortOrder = urlSortOrder || "desc";
 
   // Local state for title filter input (debounced)
   const [titleFilterInput, setTitleFilterInput] =
@@ -110,24 +127,11 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   });
 
   // Sync sorting state with URL params when they change externally
-  // Use a ref to track the last synced values to prevent loops
-  const lastSyncedSortRef = React.useRef({ sortBy: "", sortOrder: "" });
-
   React.useEffect(() => {
-    const currentSortKey = `${sortBy || ""}-${sortOrder || "desc"}`;
-    const lastSyncedKey = `${lastSyncedSortRef.current.sortBy}-${lastSyncedSortRef.current.sortOrder}`;
-
-    // Only sync if URL params actually changed
-    if (currentSortKey !== lastSyncedKey) {
-      if (sortBy) {
-        setSorting([{ id: sortBy, desc: sortOrder === "desc" }]);
-      } else {
-        setSorting([]);
-      }
-      lastSyncedSortRef.current = {
-        sortBy: sortBy || "",
-        sortOrder: sortOrder || "desc",
-      };
+    if (sortBy) {
+      setSorting([{ id: sortBy, desc: sortOrder === "desc" }]);
+    } else {
+      setSorting([]);
     }
   }, [sortBy, sortOrder]);
 
@@ -142,61 +146,25 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
-  // Update URL params when filters change
-  // Use router.refresh() pattern to avoid dependency on searchParams
-  const updateSearchParams = React.useCallback(
-    (updates: Record<string, string | null>) => {
-      const currentParams = new URLSearchParams(window.location.search);
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === "" || value === "all") {
-          currentParams.delete(key);
-        } else {
-          currentParams.set(key, value);
-        }
-      });
-
-      const newUrl = `/dashboard/feedback?${currentParams.toString()}`;
-      router.push(newUrl);
-    },
-    [router],
-  );
-
   const handleProjectChange = (value: string) => {
-    updateSearchParams({ projectId: value === "all" ? null : value });
+    setUrlProjectId(value === "all" ? null : value);
   };
 
   const handleStatusChange = (value: string) => {
-    updateSearchParams({ status: value === "all" ? null : value });
+    setUrlStatus(value === "all" ? null : value);
   };
 
-  // Handle sorting changes - only update URL if different from current URL params
-  const lastSortStateRef = React.useRef<string>("");
-
+  // Handle sorting changes - update URL when sorting state changes
   React.useEffect(() => {
-    const currentSortKey =
-      sorting.length > 0
-        ? `${sorting[0].id}-${sorting[0].desc ? "desc" : "asc"}`
-        : "";
-    const urlSortKey = sortBy ? `${sortBy}-${sortOrder}` : "";
-
-    // Only update URL if sorting state changed AND differs from URL
-    if (
-      currentSortKey !== lastSortStateRef.current &&
-      currentSortKey !== urlSortKey
-    ) {
-      if (sorting.length > 0) {
-        const sort = sorting[0];
-        updateSearchParams({
-          sortBy: sort.id,
-          sortOrder: sort.desc ? "desc" : "asc",
-        });
-      } else {
-        updateSearchParams({ sortBy: null, sortOrder: null });
-      }
-      lastSortStateRef.current = currentSortKey;
+    if (sorting.length > 0) {
+      const sort = sorting[0];
+      setUrlSortBy(sort.id);
+      setUrlSortOrder(sort.desc ? "desc" : "asc");
+    } else {
+      setUrlSortBy(null);
+      setUrlSortOrder(null);
     }
-  }, [sorting, updateSearchParams, sortBy, sortOrder]);
+  }, [sorting, setUrlSortBy, setUrlSortOrder]);
 
   // Debounce title filter changes
   React.useEffect(() => {
@@ -206,11 +174,11 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
     }
 
     const timer = setTimeout(() => {
-      updateSearchParams({ title: titleFilterInput || null });
+      setUrlTitle(titleFilterInput || null);
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [titleFilterInput, titleFilterFromUrl, updateSearchParams]);
+  }, [titleFilterInput, titleFilterFromUrl, setUrlTitle]);
 
   // Handle title filter input changes
   const handleTitleFilterChange = (value: string) => {
