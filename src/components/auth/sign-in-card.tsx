@@ -13,10 +13,11 @@ import { AlertCircle, Github } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
 import posthog from "posthog-js";
-import { useTransition } from "react";
+import { useState } from "react";
 import { HexagonIconNegative } from "../icon";
 import { Alert, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
+import { Spinner } from "../ui/spinner";
 
 // Google icon SVG component
 function GoogleIcon() {
@@ -43,12 +44,15 @@ function GoogleIcon() {
 }
 
 export function SignInCard() {
-  const [isPending, startTransition] = useTransition();
+  const [loadingProvider, setLoadingProvider] = useState<
+    "github" | "google" | null
+  >(null);
   const [error] = useQueryState("error");
   const [errorDescription] = useQueryState("error_description");
   const errorMessage = error ? `${error}: ${errorDescription || ""}` : null;
   const wasGithubLastUsed = authClient.isLastUsedLoginMethod("github");
   const wasGoogleLastUsed = authClient.isLastUsedLoginMethod("google");
+  const isLoading = loadingProvider !== null;
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -80,19 +84,22 @@ export function SignInCard() {
             className="w-full h-11 text-base font-medium relative"
             size="lg"
             onClick={() => {
-              startTransition(() => {
-                posthog.capture("user_signed_in", { provider: "github" });
-                authClient.signIn.social({ provider: "github" });
-              });
+              setLoadingProvider("github");
+              posthog.capture("user_signed_in", { provider: "github" });
+              authClient.signIn.social({ provider: "github" });
             }}
-            disabled={isPending}
+            disabled={isLoading}
           >
             {wasGithubLastUsed && (
               <Badge variant="secondary" className="absolute -top-3 -right-2">
                 Last Used
               </Badge>
             )}
-            <Github className="h-5 w-5" />
+            {loadingProvider === "github" ? (
+              <Spinner className="h-5 w-5" />
+            ) : (
+              <Github className="h-5 w-5" />
+            )}
             Continue with GitHub
           </Button>
           <div className="relative">
@@ -108,19 +115,22 @@ export function SignInCard() {
             size="lg"
             variant="outline"
             onClick={() => {
-              startTransition(() => {
-                posthog.capture("user_signed_in", { provider: "google" });
-                authClient.signIn.social({ provider: "google" });
-              });
+              setLoadingProvider("google");
+              posthog.capture("user_signed_in", { provider: "google" });
+              authClient.signIn.social({ provider: "google" });
             }}
-            disabled={isPending}
+            disabled={isLoading}
           >
             {wasGoogleLastUsed && (
               <Badge variant="secondary" className="absolute -top-3 -right-2">
                 Last Used
               </Badge>
             )}
-            <GoogleIcon />
+            {loadingProvider === "google" ? (
+              <Spinner className="h-5 w-5" />
+            ) : (
+              <GoogleIcon />
+            )}
             Continue with Google
           </Button>
           {errorMessage && (

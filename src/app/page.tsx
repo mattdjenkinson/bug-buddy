@@ -16,7 +16,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+    <div
+      className="relative flex min-h-screen items-center justify-center bg-background p-4"
+      suppressHydrationWarning
+    >
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
