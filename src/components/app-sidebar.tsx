@@ -6,9 +6,11 @@ import {
   LayoutDashboard,
   MessageSquare,
   Settings2,
+  Shield,
 } from "lucide-react";
 import * as React from "react";
 
+import { useSession } from "@/components/auth/session-provider";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -23,8 +25,11 @@ import {
 import Link from "next/link";
 import { HexagonIconNegative } from "./icon";
 
-const data = {
-  navMain: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useSession();
+  const isAdmin = user?.role === "admin";
+
+  const navItems = [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -50,10 +55,16 @@ const data = {
       url: "/dashboard/settings",
       icon: Settings2,
     },
-  ],
-};
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    ...(isAdmin
+      ? [
+          {
+            title: "Admin",
+            url: "/dashboard/admin",
+            icon: Shield,
+          },
+        ]
+      : []),
+  ];
   return (
     <Sidebar variant="inset" {...props} suppressHydrationWarning>
       <SidebarHeader>
@@ -73,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -3,7 +3,6 @@
 import {
   flexRender,
   getCoreRowModel,
-  getPaginationRowModel,
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
@@ -16,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { DataPagination } from "@/components/ui/data-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +42,6 @@ import {
 } from "@/components/ui/table";
 import { getStatusBadge } from "@/lib/badge-helpers";
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-view-options";
 
 interface Feedback {
@@ -75,7 +74,15 @@ interface FeedbackListProps {
 export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const feedback = initialFeedback;
+  const [limit, setLimit] = React.useState(10);
+  const [offset, setOffset] = React.useState(0);
+
+  // Apply client-side pagination to the feedback array
+  const paginatedFeedback = React.useMemo(() => {
+    return initialFeedback.slice(offset, offset + limit);
+  }, [initialFeedback, offset, limit]);
+
+  const feedback = paginatedFeedback;
 
   // Get filter values from URL params
   const selectedProject = searchParams.get("projectId") || "all";
@@ -369,7 +376,6 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     // Disable client-side sorting and filtering since we do it server-side
     manualSorting: true,
     manualFiltering: true,
@@ -486,7 +492,18 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
           </Table>
         </div>
       </div>
-      <DataTablePagination table={table} />
+      {initialFeedback.length > 0 && (
+        <DataPagination
+          total={initialFeedback.length}
+          limit={limit}
+          offset={offset}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setOffset(0);
+          }}
+          onOffsetChange={setOffset}
+        />
+      )}
     </div>
   );
 }

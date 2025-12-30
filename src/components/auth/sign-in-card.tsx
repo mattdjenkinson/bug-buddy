@@ -12,6 +12,7 @@ import { authClient } from "@/lib/auth/client";
 import { Github } from "lucide-react";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { useTransition } from "react";
 import { HexagonIconNegative } from "../icon";
 import { Badge } from "../ui/badge";
 
@@ -40,8 +41,10 @@ function GoogleIcon() {
 }
 
 export function SignInCard() {
+  const [isPending, startTransition] = useTransition();
   const wasGithubLastUsed = authClient.isLastUsedLoginMethod("github");
   const wasGoogleLastUsed = authClient.isLastUsedLoginMethod("google");
+
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="flex flex-col items-center space-y-3 text-center">
@@ -72,9 +75,12 @@ export function SignInCard() {
             className="w-full h-11 text-base font-medium relative"
             size="lg"
             onClick={() => {
-              posthog.capture("user_signed_in", { provider: "github" });
-              authClient.signIn.social({ provider: "github" });
+              startTransition(() => {
+                posthog.capture("user_signed_in", { provider: "github" });
+                authClient.signIn.social({ provider: "github" });
+              });
             }}
+            disabled={isPending}
           >
             {wasGithubLastUsed && (
               <Badge variant="secondary" className="absolute -top-3 -right-2">
@@ -97,9 +103,12 @@ export function SignInCard() {
             size="lg"
             variant="outline"
             onClick={() => {
-              posthog.capture("user_signed_in", { provider: "google" });
-              authClient.signIn.social({ provider: "google" });
+              startTransition(() => {
+                posthog.capture("user_signed_in", { provider: "google" });
+                authClient.signIn.social({ provider: "google" });
+              });
             }}
+            disabled={isPending}
           >
             {wasGoogleLastUsed && (
               <Badge variant="secondary" className="absolute -top-3 -right-2">

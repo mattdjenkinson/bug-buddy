@@ -9,6 +9,10 @@ type User = {
   name: string;
   email: string;
   image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | null;
 };
 
 type SessionContextType = {
