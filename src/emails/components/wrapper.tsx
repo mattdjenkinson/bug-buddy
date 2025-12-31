@@ -26,7 +26,12 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => {
         fontStyle="normal"
       />
       <Tailwind>
-        <Body className="bg-white font-geist-mono p-4">
+        <Body
+          className="bg-white p-4"
+          style={{
+            fontFamily: '"Geist Mono", "Courier New", Courier, monospace',
+          }}
+        >
           {children}
           <Container className="mx-auto py-5">
             <Hr className="border-[#E5E5E5]" />

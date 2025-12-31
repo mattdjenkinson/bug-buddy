@@ -10,8 +10,10 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "pnpm db:generate && pnpm db:migrate:deploy && next build",
+    "dev": "node scripts/create-widget-manifest.js && next dev",
+    "build": "pnpm db:generate && pnpm db:migrate:deploy && pnpm widget:minify && next build",
+    "widget:minify": "node scripts/minify-widget.js",
+    "widget:manifest": "node scripts/create-widget-manifest.js",
     "start": "next start",
     "lint": "eslint",
     "email:dev": "email dev --dir=src/emails --port=3001",
@@ -96,6 +98,7 @@
     "prisma": "^7.2.0",
     "react-email": "5.1.0",
     "tailwindcss": "^4",
+    "terser": "^5.36.0",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5"
   }

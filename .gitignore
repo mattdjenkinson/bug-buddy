@@ -36,5 +36,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# widget build artifacts
+public/widget-manifest.json
+public/widget.*.min.js
+
 
 
