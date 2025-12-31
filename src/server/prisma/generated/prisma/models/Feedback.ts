@@ -67,6 +67,7 @@ export type FeedbackCountAggregateOutputType = {
   userEmail: number
   userAgent: number
   url: number
+  deviceInfo: number
   status: number
   createdAt: number
   updatedAt: number
@@ -117,6 +118,7 @@ export type FeedbackCountAggregateInputType = {
   userEmail?: true
   userAgent?: true
   url?: true
+  deviceInfo?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -206,6 +208,7 @@ export type FeedbackGroupByOutputType = {
   userEmail: string | null
   userAgent: string | null
   url: string | null
+  deviceInfo: runtime.JsonValue | null
   status: string
   createdAt: Date
   updatedAt: Date
@@ -243,6 +246,7 @@ export type FeedbackWhereInput = {
   userEmail?: Prisma.StringNullableFilter<"Feedback"> | string | null
   userAgent?: Prisma.StringNullableFilter<"Feedback"> | string | null
   url?: Prisma.StringNullableFilter<"Feedback"> | string | null
+  deviceInfo?: Prisma.JsonNullableFilter<"Feedback">
   status?: Prisma.StringFilter<"Feedback"> | string
   createdAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
@@ -261,6 +265,7 @@ export type FeedbackOrderByWithRelationInput = {
   userEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   url?: Prisma.SortOrderInput | Prisma.SortOrder
+  deviceInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -282,6 +287,7 @@ export type FeedbackWhereUniqueInput = Prisma.AtLeast<{
   userEmail?: Prisma.StringNullableFilter<"Feedback"> | string | null
   userAgent?: Prisma.StringNullableFilter<"Feedback"> | string | null
   url?: Prisma.StringNullableFilter<"Feedback"> | string | null
+  deviceInfo?: Prisma.JsonNullableFilter<"Feedback">
   status?: Prisma.StringFilter<"Feedback"> | string
   createdAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
@@ -300,6 +306,7 @@ export type FeedbackOrderByWithAggregationInput = {
   userEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   userAgent?: Prisma.SortOrderInput | Prisma.SortOrder
   url?: Prisma.SortOrderInput | Prisma.SortOrder
+  deviceInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -322,6 +329,7 @@ export type FeedbackScalarWhereWithAggregatesInput = {
   userEmail?: Prisma.StringNullableWithAggregatesFilter<"Feedback"> | string | null
   userAgent?: Prisma.StringNullableWithAggregatesFilter<"Feedback"> | string | null
   url?: Prisma.StringNullableWithAggregatesFilter<"Feedback"> | string | null
+  deviceInfo?: Prisma.JsonNullableWithAggregatesFilter<"Feedback">
   status?: Prisma.StringWithAggregatesFilter<"Feedback"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Feedback"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Feedback"> | Date | string
@@ -337,6 +345,7 @@ export type FeedbackCreateInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -355,6 +364,7 @@ export type FeedbackUncheckedCreateInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -371,6 +381,7 @@ export type FeedbackUpdateInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -389,6 +400,7 @@ export type FeedbackUncheckedUpdateInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -406,6 +418,7 @@ export type FeedbackCreateManyInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -421,6 +434,7 @@ export type FeedbackUpdateManyMutationInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -437,6 +451,7 @@ export type FeedbackUncheckedUpdateManyInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -463,6 +478,7 @@ export type FeedbackCountOrderByAggregateInput = {
   userEmail?: Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  deviceInfo?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -571,6 +587,7 @@ export type FeedbackCreateWithoutProjectInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -587,6 +604,7 @@ export type FeedbackUncheckedCreateWithoutProjectInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -633,6 +651,7 @@ export type FeedbackScalarWhereInput = {
   userEmail?: Prisma.StringNullableFilter<"Feedback"> | string | null
   userAgent?: Prisma.StringNullableFilter<"Feedback"> | string | null
   url?: Prisma.StringNullableFilter<"Feedback"> | string | null
+  deviceInfo?: Prisma.JsonNullableFilter<"Feedback">
   status?: Prisma.StringFilter<"Feedback"> | string
   createdAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Feedback"> | Date | string
@@ -648,6 +667,7 @@ export type FeedbackCreateWithoutIssueInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -665,6 +685,7 @@ export type FeedbackUncheckedCreateWithoutIssueInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -696,6 +717,7 @@ export type FeedbackUpdateWithoutIssueInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -713,6 +735,7 @@ export type FeedbackUncheckedUpdateWithoutIssueInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -728,6 +751,7 @@ export type FeedbackCreateManyProjectInput = {
   userEmail?: string | null
   userAgent?: string | null
   url?: string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -743,6 +767,7 @@ export type FeedbackUpdateWithoutProjectInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -759,6 +784,7 @@ export type FeedbackUncheckedUpdateWithoutProjectInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -775,6 +801,7 @@ export type FeedbackUncheckedUpdateManyWithoutProjectInput = {
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deviceInfo?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -793,6 +820,7 @@ export type FeedbackSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   userEmail?: boolean
   userAgent?: boolean
   url?: boolean
+  deviceInfo?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -811,6 +839,7 @@ export type FeedbackSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userEmail?: boolean
   userAgent?: boolean
   url?: boolean
+  deviceInfo?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -828,6 +857,7 @@ export type FeedbackSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   userEmail?: boolean
   userAgent?: boolean
   url?: boolean
+  deviceInfo?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -845,12 +875,13 @@ export type FeedbackSelectScalar = {
   userEmail?: boolean
   userAgent?: boolean
   url?: boolean
+  deviceInfo?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FeedbackOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "title" | "description" | "screenshot" | "annotations" | "userName" | "userEmail" | "userAgent" | "url" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["feedback"]>
+export type FeedbackOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "title" | "description" | "screenshot" | "annotations" | "userName" | "userEmail" | "userAgent" | "url" | "deviceInfo" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["feedback"]>
 export type FeedbackInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   issue?: boolean | Prisma.Feedback$issueArgs<ExtArgs>
@@ -879,6 +910,7 @@ export type $FeedbackPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     userEmail: string | null
     userAgent: string | null
     url: string | null
+    deviceInfo: runtime.JsonValue | null
     status: string
     createdAt: Date
     updatedAt: Date
@@ -1317,6 +1349,7 @@ export interface FeedbackFieldRefs {
   readonly userEmail: Prisma.FieldRef<"Feedback", 'String'>
   readonly userAgent: Prisma.FieldRef<"Feedback", 'String'>
   readonly url: Prisma.FieldRef<"Feedback", 'String'>
+  readonly deviceInfo: Prisma.FieldRef<"Feedback", 'Json'>
   readonly status: Prisma.FieldRef<"Feedback", 'String'>
   readonly createdAt: Prisma.FieldRef<"Feedback", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Feedback", 'DateTime'>

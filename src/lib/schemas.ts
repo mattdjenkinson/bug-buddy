@@ -107,6 +107,27 @@ export const widgetSubmitSchema = z.object({
   userEmail: z.email().optional().or(z.literal("")),
   url: z.string().optional(),
   userAgent: z.string().optional(),
+  deviceInfo: z
+    .object({
+      deviceType: z.string().optional(),
+      browser: z.string().optional(),
+      screenSize: z
+        .object({
+          width: z.number(),
+          height: z.number(),
+        })
+        .optional(),
+      viewportSize: z
+        .object({
+          width: z.number(),
+          height: z.number(),
+        })
+        .optional(),
+      os: z.string().optional(),
+      zoomLevel: z.number().optional(),
+      pixelRatio: z.number().optional(),
+    })
+    .optional(),
 });
 
 // Widget Upload Schema

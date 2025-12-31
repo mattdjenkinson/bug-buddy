@@ -111,6 +111,7 @@ model Feedback {
     userEmail   String?
     userAgent   String?
     url         String? // URL where feedback was submitted from
+    deviceInfo  Json? // Device and browser information (device type, screen size, viewport, etc.)
     status      String   @default("open") // open, closed, in-progress
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt

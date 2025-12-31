@@ -135,6 +135,86 @@ export default function WidgetEmbedPageContent() {
         );
       }
 
+      // Capture device information
+      const getDeviceType = (): string => {
+        const ua = navigator.userAgent.toLowerCase();
+        if (/tablet|ipad|playbook|silk/i.test(ua)) {
+          return "tablet";
+        }
+        if (
+          /mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(
+            ua,
+          )
+        ) {
+          return "mobile";
+        }
+        return "desktop";
+      };
+
+      const getBrowserInfo = (): string => {
+        const ua = navigator.userAgent;
+        const browserRegex = [
+          { name: "Chrome", regex: /Chrome\/([\d.]+)/ },
+          { name: "Firefox", regex: /Firefox\/([\d.]+)/ },
+          { name: "Safari", regex: /Version\/([\d.]+).*Safari/ },
+          { name: "Edge", regex: /Edg\/([\d.]+)/ },
+          { name: "Opera", regex: /(?:Opera|OPR)\/([\d.]+)/ },
+        ];
+
+        for (const browser of browserRegex) {
+          const match = ua.match(browser.regex);
+          if (match) {
+            return `${browser.name} ${match[1]}`;
+          }
+        }
+        return "Unknown";
+      };
+
+      const getOSInfo = (): string => {
+        const ua = navigator.userAgent;
+        if (/Windows NT/.test(ua)) {
+          const match = ua.match(/Windows NT ([\d.]+)/);
+          return match ? `Windows ${match[1]}` : "Windows";
+        }
+        if (/Mac OS X/.test(ua)) {
+          const match = ua.match(/Mac OS X ([\d_]+)/);
+          return match ? `OS X ${match[1].replace(/_/g, ".")}` : "OS X";
+        }
+        if (/Linux/.test(ua)) return "Linux";
+        if (/Android/.test(ua)) {
+          const match = ua.match(/Android ([\d.]+)/);
+          return match ? `Android ${match[1]}` : "Android";
+        }
+        if (/iPhone|iPad/.test(ua)) {
+          const match = ua.match(/OS ([\d_]+)/);
+          return match ? `iOS ${match[1].replace(/_/g, ".")}` : "iOS";
+        }
+        return "Unknown";
+      };
+
+      const getZoomLevel = (): number => {
+        // Browser zoom level is difficult to detect accurately, especially in iframes
+        // Default to 100% which is the standard zoom level
+        // In the future, this could be enhanced with more sophisticated detection
+        return 100;
+      };
+
+      const deviceInfo = {
+        deviceType: getDeviceType(),
+        browser: getBrowserInfo(),
+        screenSize: {
+          width: screen.width,
+          height: screen.height,
+        },
+        viewportSize: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        os: getOSInfo(),
+        zoomLevel: getZoomLevel(),
+        pixelRatio: window.devicePixelRatio || 1,
+      };
+
       // Submit feedback with the URL
       const result = await submitFeedback({
         projectKey,
@@ -146,6 +226,7 @@ export default function WidgetEmbedPageContent() {
         userEmail: data.email || undefined,
         url,
         userAgent: navigator.userAgent,
+        deviceInfo,
       });
 
       if (!result.success) {

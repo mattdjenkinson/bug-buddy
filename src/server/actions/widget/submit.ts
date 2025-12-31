@@ -86,6 +86,7 @@ export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
         userEmail: validated.userEmail || null,
         url: validated.url || null,
         userAgent: validated.userAgent || null,
+        deviceInfo: validated.deviceInfo,
         status: "open",
       },
     });
@@ -102,12 +103,55 @@ export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
       const feedbackScreenshot = feedback.screenshot;
       const feedbackAnnotations = feedback.annotations;
       const feedbackUserAgent = feedback.userAgent;
+      const feedbackDeviceInfo = feedback.deviceInfo as {
+        deviceType?: string;
+        browser?: string;
+        screenSize?: { width: number; height: number };
+        viewportSize?: { width: number; height: number };
+        os?: string;
+        zoomLevel?: number;
+        pixelRatio?: number;
+      } | null;
       const feedbackId = feedback.id;
 
       after(async () => {
         try {
           // Parse user agent to get browser and OS info
           const userAgentInfo = parseUserAgent(feedbackUserAgent);
+
+          // Format device info for GitHub issue
+          let deviceInfoSection = "";
+          if (feedbackDeviceInfo) {
+            const parts: string[] = [];
+            if (feedbackDeviceInfo.deviceType) {
+              parts.push(`**Device type:** ${feedbackDeviceInfo.deviceType}`);
+            }
+            if (feedbackDeviceInfo.browser) {
+              parts.push(`**Browser:** ${feedbackDeviceInfo.browser}`);
+            }
+            if (feedbackDeviceInfo.screenSize) {
+              parts.push(
+                `**Screen Size:** ${feedbackDeviceInfo.screenSize.width} x ${feedbackDeviceInfo.screenSize.height}`,
+              );
+            }
+            if (feedbackDeviceInfo.os) {
+              parts.push(`**OS:** ${feedbackDeviceInfo.os}`);
+            }
+            if (feedbackDeviceInfo.viewportSize) {
+              parts.push(
+                `**Viewport Size:** ${feedbackDeviceInfo.viewportSize.width} x ${feedbackDeviceInfo.viewportSize.height}`,
+              );
+            }
+            if (feedbackDeviceInfo.zoomLevel !== undefined) {
+              parts.push(`**Zoom Level:** ${feedbackDeviceInfo.zoomLevel}%`);
+            }
+            if (feedbackDeviceInfo.pixelRatio !== undefined) {
+              parts.push(`**Pixel Ratio:** @${feedbackDeviceInfo.pixelRatio}x`);
+            }
+            if (parts.length > 0) {
+              deviceInfoSection = `\n### Device Information\n${parts.join("\n")}`;
+            }
+          }
 
           // Create issue body
           const issueBody = `## Feedback Details
@@ -116,7 +160,7 @@ ${feedbackDescription}
 
 ${feedbackUserName ? `**Reported by:** ${feedbackUserName}` : ""}
 ${feedbackUrl ? `**URL:** ${feedbackUrl}` : ""}
-${userAgentInfo ? `\n### Environment\n${userAgentInfo}` : ""}
+${userAgentInfo ? `\n### Environment\n${userAgentInfo}` : ""}${deviceInfoSection}
 
 ### Screenshot
 ![Screenshot](${feedbackScreenshot})

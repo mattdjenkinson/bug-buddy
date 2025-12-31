@@ -37,6 +37,15 @@ interface FeedbackDetailProps {
     userEmail: string | null;
     url: string | null;
     userAgent: string | null;
+    deviceInfo: {
+      deviceType?: string;
+      browser?: string;
+      screenSize?: { width: number; height: number };
+      viewportSize?: { width: number; height: number };
+      os?: string;
+      zoomLevel?: number;
+      pixelRatio?: number;
+    } | null;
     createdAt: string;
     project: {
       id: string;
@@ -304,6 +313,100 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
                       {feedback.userAgent}
                     </p>
                   </details>
+                </div>
+              )}
+              {feedback.deviceInfo && (
+                <div className="space-y-2 pt-2 border-t">
+                  <h4 className="font-semibold text-sm mb-2">
+                    Device Information
+                  </h4>
+                  {feedback.deviceInfo.deviceType && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">
+                          Device type:
+                        </span>
+                      </div>
+                      <span className="sm:ml-0 capitalize">
+                        {feedback.deviceInfo.deviceType}
+                      </span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.browser && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">Browser:</span>
+                      </div>
+                      <span className="sm:ml-0">
+                        {feedback.deviceInfo.browser}
+                      </span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.screenSize && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">
+                          Screen Size:
+                        </span>
+                      </div>
+                      <span className="sm:ml-0">
+                        {feedback.deviceInfo.screenSize.width} x{" "}
+                        {feedback.deviceInfo.screenSize.height}
+                      </span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.os && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">OS:</span>
+                      </div>
+                      <span className="sm:ml-0">{feedback.deviceInfo.os}</span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.viewportSize && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">
+                          Viewport Size:
+                        </span>
+                      </div>
+                      <span className="sm:ml-0">
+                        {feedback.deviceInfo.viewportSize.width} x{" "}
+                        {feedback.deviceInfo.viewportSize.height}
+                      </span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.zoomLevel !== undefined && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">
+                          Zoom Level:
+                        </span>
+                      </div>
+                      <span className="sm:ml-0">
+                        {feedback.deviceInfo.zoomLevel}%
+                      </span>
+                    </div>
+                  )}
+                  {feedback.deviceInfo.pixelRatio !== undefined && (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">
+                          Pixel Ratio:
+                        </span>
+                      </div>
+                      <span className="sm:ml-0">
+                        @{feedback.deviceInfo.pixelRatio}x
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2 text-sm">
