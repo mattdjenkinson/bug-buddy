@@ -26,43 +26,63 @@ export async function GET(
 
     // Check if origin is allowed
     const origin = request.headers.get("origin");
+    const referer = request.headers.get("referer");
 
     const allowedDomains =
       (project as { allowedDomains?: string[] }).allowedDomains || [];
 
-    // If allowed domains are configured, check the origin
+    // If allowed domains are configured, check the origin or referer
     if (allowedDomains.length > 0) {
-      // Require origin header when domains are restricted
-      if (!origin) {
+      // Try to get the requesting domain from origin or referer
+      let requestHost: string | null = null;
+
+      if (origin) {
+        try {
+          const originUrl = new URL(origin);
+          // For localhost, preserve the port; for others, use hostname only
+          const isLocalhost =
+            originUrl.hostname === "localhost" ||
+            originUrl.hostname === "127.0.0.1";
+          requestHost = isLocalhost ? originUrl.host : originUrl.hostname;
+        } catch {
+          // Invalid origin URL, ignore
+        }
+      } else if (referer) {
+        try {
+          const refererUrl = new URL(referer);
+          const isLocalhost =
+            refererUrl.hostname === "localhost" ||
+            refererUrl.hostname === "127.0.0.1";
+          requestHost = isLocalhost ? refererUrl.host : refererUrl.hostname;
+        } catch {
+          // Invalid referer URL, ignore
+        }
+      }
+
+      // If we couldn't determine the requesting domain, reject the request
+      if (!requestHost) {
         return NextResponse.json(
-          { error: "Origin header required" },
+          { error: "Origin or Referer header required" },
           {
             status: 403,
             headers: {
-              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Origin": origin || "*",
               "Access-Control-Allow-Methods": "GET, OPTIONS",
               "Access-Control-Allow-Headers": "Content-Type",
             },
           },
         );
       }
-      const originUrl = new URL(origin);
-      // For localhost, preserve the port; for others, use hostname only
-      const isLocalhost =
-        originUrl.hostname === "localhost" ||
-        originUrl.hostname === "127.0.0.1";
-      const originHost = isLocalhost ? originUrl.host : originUrl.hostname;
 
-      // Check if origin matches any allowed domain
+      // Check if origin/referer matches any allowed domain
       const isAllowed = allowedDomains.some((domain: string) => {
         // Remove protocol if present
         const cleanDomain = domain
           .replace(/^https?:\/\//, "")
           .replace(/\/$/, "");
         // Support exact match or subdomain match
-
         return (
-          originHost === cleanDomain || originHost.endsWith(`.${cleanDomain}`)
+          requestHost === cleanDomain || requestHost.endsWith(`.${cleanDomain}`)
         );
       });
 
@@ -72,7 +92,7 @@ export async function GET(
           {
             status: 403,
             headers: {
-              "Access-Control-Allow-Origin": origin,
+              "Access-Control-Allow-Origin": origin || "*",
               "Access-Control-Allow-Methods": "GET, OPTIONS",
               "Access-Control-Allow-Headers": "Content-Type",
             },
