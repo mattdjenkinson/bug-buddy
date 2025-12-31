@@ -12,7 +12,6 @@ import { FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useGitHubConnectionStatus } from "@/hooks/use-github-connection-status";
 import { getBaseUrlClient } from "@/lib/base-url.client";
-import { useQuery } from "@tanstack/react-query";
 import { Check, Code, Copy, Github, Settings2 } from "lucide-react";
 import Link from "next/link";
 import posthog from "posthog-js";
@@ -38,14 +37,6 @@ interface ProjectsListProps {
   openDialog?: boolean;
 }
 
-interface WidgetVersion {
-  version: string | null;
-  filename: string;
-  size: number;
-  originalSize: number;
-  createdAt: string | null;
-}
-
 export function ProjectsList({
   projects: initialProjects,
   openDialog = false,
@@ -56,21 +47,6 @@ export function ProjectsList({
 
   // Handle GitHub connection success/error from query params
   useGitHubConnectionStatus();
-
-  const { data: widgetVersion } = useQuery<WidgetVersion>({
-    queryKey: ["widget-version"],
-    enabled: projects.length > 0,
-    queryFn: async () => {
-      const res = await fetch("/api/widget/version");
-
-      return res.json();
-    },
-    staleTime: Infinity, // Widget version doesn't change during session
-    gcTime: Infinity, // Keep in cache indefinitely
-    retry: 1, // Only retry once on failure
-  });
-
-  const widgetFilename = widgetVersion?.filename || "widget.js";
 
   const handleProjectCreated = (project: ProjectsListProps["projects"][0]) => {
     setProjects([project, ...projects]);
@@ -89,9 +65,9 @@ export function ProjectsList({
 
   const copyEmbedCode = (apiKey: string, projectId: string) => {
     const appUrl = getBaseUrlClient();
-    // Use versioned filename from manifest (includes hash for cache busting)
-    // Falls back to widget.js if manifest doesn't exist
-    const embedCode = `<script src="${appUrl}/${widgetFilename}" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
+    // Use stable /widget.js URL that always serves the latest version
+    // The route handler will automatically resolve to the current minified version
+    const embedCode = `<script src="${appUrl}/widget.js" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
     navigator.clipboard.writeText(embedCode);
     toast.success("Embed code copied to clipboard!");
 
