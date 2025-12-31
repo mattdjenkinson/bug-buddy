@@ -14,7 +14,7 @@
     "build": "pnpm db:generate && pnpm db:migrate:deploy && next build",
     "start": "next start",
     "lint": "eslint",
-    "email:dev": "email dev",
+    "email:dev": "email dev --dir=src/emails --port=3001",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:restart": "docker compose restart",
@@ -58,6 +58,7 @@
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "next-themes": "^0.4.6",
+    "nodemailer": "^7.0.12",
     "nuqs": "^2.8.6",
     "pg": "^8.16.3",
     "posthog-js": "^1.310.1",
@@ -73,6 +74,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "ua-parser-js": "^1.0.37",
+    "workflow": "4.0.1-beta.39",
     "zod": "^4"
   },
   "devDependencies": {
@@ -81,6 +83,7 @@
     "@tanstack/eslint-plugin-query": "^5.91.2",
     "@types/fabric": "^5.3.10",
     "@types/node": "^20.19.27",
+    "@types/nodemailer": "^7.0.4",
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

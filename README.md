@@ -44,6 +44,12 @@ A feedback widget system that captures screenshots, allows annotations, and auto
 
    # Vercel Blob
    BLOB_READ_WRITE_TOKEN="your-blob-read-write-token"
+
+   # Email
+   EMAIL_HOST=
+   EMAIL_PORT=
+   EMAIL_USER=
+   EMAIL_PASSWORD=
    ```
 
 3. **Start PostgreSQL database:**

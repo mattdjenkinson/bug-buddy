@@ -1,8 +1,10 @@
 import { serverEnv } from "@/env";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmailWorkflow } from "@/server/queues/workflows/emails/send-welcome-email.workflow";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, lastLoginMethod } from "better-auth/plugins";
+import { start } from "workflow/api";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -11,12 +13,6 @@ export const auth = betterAuth({
   plugins: [lastLoginMethod(), admin()],
   emailAndPassword: {
     enabled: false,
-  },
-  additionalFields: {
-    role: {
-      type: "string",
-      input: false,
-    },
   },
   socialProviders: {
     github: {
@@ -36,6 +32,16 @@ export const auth = betterAuth({
     },
   },
   secret: serverEnv.BETTER_AUTH_SECRET,
+  // DB Hooks
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          start(sendWelcomeEmailWorkflow, [user.email]);
+        },
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;
