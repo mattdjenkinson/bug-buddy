@@ -68,6 +68,10 @@ export default async function FeedbackDetailPage({
           })),
         }
       : null,
+    deviceInfo:
+      typeof feedback.deviceInfo === "string"
+        ? JSON.parse(feedback.deviceInfo)
+        : feedback.deviceInfo,
   };
 
   return <FeedbackDetail feedback={feedbackWithStringDates} />;
