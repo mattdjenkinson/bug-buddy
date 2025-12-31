@@ -178,7 +178,7 @@ export default function WidgetEmbedPageContent() {
         }
         if (/Mac OS X/.test(ua)) {
           const match = ua.match(/Mac OS X ([\d_]+)/);
-          return match ? `OS X ${match[1].replace(/_/g, ".")}` : "OS X";
+          return match ? `macOS ${match[1].replace(/_/g, ".")}` : "macOS";
         }
         if (/Linux/.test(ua)) return "Linux";
         if (/Android/.test(ua)) {

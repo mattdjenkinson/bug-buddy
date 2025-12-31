@@ -123,7 +123,8 @@ function parseUserAgent(userAgent: string) {
               : version;
   } else if (
     userAgent.includes("Mac OS X") ||
-    userAgent.includes("Macintosh")
+    userAgent.includes("Macintosh") ||
+    userAgent.includes("macOS")
   ) {
     const match = userAgent.match(/Mac OS X ([\d_]+)/);
     osInfo.name = "macOS";
