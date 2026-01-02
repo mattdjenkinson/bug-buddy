@@ -80,10 +80,23 @@ export async function uploadWidgetImage(data: {
       };
     }
 
-    console.error("Error uploading image:", error);
+    // Extract error message for better debugging
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+          ? error
+          : "Failed to upload image";
+
+    console.error("Error uploading image:", {
+      error,
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return {
       success: false,
-      error: "Failed to upload image",
+      error: errorMessage,
     };
   }
 }

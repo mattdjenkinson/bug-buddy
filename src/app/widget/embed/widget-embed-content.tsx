@@ -96,8 +96,13 @@ export default function WidgetEmbedPageContent({
     // Also request screenshot if parent window is available
     // Request multiple times to ensure parent receives it
     const requestScreenshot = () => {
-      if (window.parent && window.parent !== window) {
+      try {
+        // postMessage is safe to call even if parent is cross-origin
+        // It will silently fail if parent is unreachable, which is fine
         window.parent.postMessage({ type: "bug-buddy-ready" }, "*");
+      } catch {
+        // If postMessage fails, we're likely not in an iframe or parent is unreachable
+        // This is fine - the widget can still function without parent communication
       }
     };
 
@@ -280,32 +285,28 @@ export default function WidgetEmbedPageContent({
       }
 
       // Upload screenshot first to get a URL
-      let screenshotUrl = finalScreenshot;
-      try {
-        if (!secretKey) {
-          throw new Error("Secret key not available");
-        }
-
-        const uploadResult = await uploadWidgetImage({
-          projectKey,
-          secretKey,
-          image: finalScreenshot,
-        });
-
-        if (!uploadResult.success) {
-          throw new Error(uploadResult.error || "Failed to upload screenshot");
-        }
-
-        if (uploadResult.url) {
-          screenshotUrl = uploadResult.url;
-        }
-      } catch (uploadError) {
-        console.error("Error uploading screenshot:", uploadError);
-        // Fallback: if upload fails, try to submit with base64 (may fail if too large)
-        console.warn(
-          "Falling back to base64 screenshot (may exceed size limit)",
-        );
+      if (!secretKey) {
+        throw new Error("Secret key not available");
       }
+
+      const uploadResult = await uploadWidgetImage({
+        projectKey,
+        secretKey,
+        image: finalScreenshot,
+      });
+
+      if (!uploadResult.success) {
+        const errorMessage =
+          uploadResult.error || "Failed to upload screenshot";
+        console.error("Error uploading screenshot:", errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      if (!uploadResult.url) {
+        throw new Error("Upload succeeded but no URL was returned");
+      }
+
+      const screenshotUrl = uploadResult.url;
 
       // Capture device information
       const getDeviceType = (): string => {
@@ -438,8 +439,13 @@ export default function WidgetEmbedPageContent({
     setIsClosing(true);
     // Wait for fade-out animation to complete before closing
     setTimeout(() => {
-      if (window.parent) {
+      try {
+        // postMessage is safe to call even if parent is cross-origin
+        // It will silently fail if parent is unreachable, which is fine
         window.parent.postMessage("bug-buddy-close", "*");
+      } catch {
+        // If postMessage fails, we're likely not in an iframe or parent is unreachable
+        // This is fine - the widget can still function without parent communication
       }
     }, 300); // Match animation duration
   };

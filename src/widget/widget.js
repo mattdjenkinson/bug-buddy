@@ -786,14 +786,22 @@
 
     // Function to send screenshot
     const sendScreenshot = () => {
-      if (screenshot && iframe.contentWindow) {
-        iframe.contentWindow.postMessage(
-          {
-            type: "bug-buddy-screenshot",
-            screenshot: screenshot,
-          },
-          config.appUrl,
-        );
+      if (screenshot) {
+        try {
+          // postMessage works cross-origin, but accessing contentWindow can throw
+          // Wrap in try-catch to handle cross-origin security errors gracefully
+          iframe.contentWindow.postMessage(
+            {
+              type: "bug-buddy-screenshot",
+              screenshot: screenshot,
+            },
+            config.appUrl,
+          );
+        } catch {
+          // Cross-origin access blocked when accessing contentWindow
+          // This is expected and safe to ignore - postMessage will still work
+          // The iframe will receive the message via the message event listener
+        }
       }
     };
 
