@@ -77,25 +77,30 @@ export async function GET(request: Request) {
     }
 
     // Check if client has cached version (If-None-Match header)
+    // Safari can be case-sensitive with ETags, so compare case-insensitively
     const ifNoneMatch = request.headers.get("If-None-Match");
-    if (ifNoneMatch === etag) {
+    if (ifNoneMatch && ifNoneMatch.toLowerCase() === etag.toLowerCase()) {
       return new NextResponse(null, {
         status: 304, // Not Modified
         headers: {
           ETag: etag,
-          "Cache-Control": "public, max-age=31536000, must-revalidate",
+          // Use no-cache to force Safari to always revalidate, but allow 304 responses
+          "Cache-Control": "no-cache, must-revalidate",
         },
       });
     }
 
     // Return the widget with appropriate headers
-    // ETag is sufficient for cache validation in serverless environments
+    // Use no-cache to force Safari to always check for updates via ETag
+    // This ensures Safari respects cache invalidation on new deployments
     const headers: Record<string, string> = {
       "Content-Type": "application/javascript",
       ETag: etag,
-      // Remove 'immutable' to allow revalidation when content changes
-      // Keep long max-age for performance, but add must-revalidate so browsers check ETag
-      "Cache-Control": "public, max-age=31536000, must-revalidate",
+      // no-cache forces revalidation every time, but 304 responses are still efficient
+      // This is necessary because Safari aggressively caches and ignores must-revalidate
+      "Cache-Control": "no-cache, must-revalidate",
+      // Add Vary header to help with cache differentiation
+      Vary: "If-None-Match",
     };
 
     return new NextResponse(widgetContent, {
