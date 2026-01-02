@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,11 +31,13 @@ import { generateWebhookSecret } from "@/server/actions/github/generate-webhook-
 import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
 import { verifyWebhook } from "@/server/actions/github/verify-webhook";
+import { getWebhookDeliveriesAction } from "@/server/actions/github/webhook-deliveries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Check,
+  Clock,
   Copy,
   ExternalLink,
   RefreshCw,
@@ -179,6 +182,44 @@ export function GitHubIntegrationForm({
       };
     },
     enabled: shouldVerifyWebhook,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  // Fetch webhook deliveries when webhook is configured
+  const {
+    data: webhookDeliveries,
+    isLoading: isLoadingDeliveries,
+    refetch: refetchDeliveries,
+  } = useQuery<
+    Array<{
+      id: number;
+      guid: string;
+      event: string;
+      action: string | null;
+      deliveredAt: Date;
+      statusCode: number | null;
+      status: string;
+      duration: number;
+      redelivery: boolean;
+    }>
+  >({
+    queryKey: ["webhook-deliveries", projectId, selectedRepository],
+    queryFn: async () => {
+      const result = await getWebhookDeliveriesAction({ projectId });
+      if (!result.success || !("deliveries" in result)) {
+        throw new Error(result.error || "Failed to fetch webhook deliveries");
+      }
+      // Convert date strings back to Date objects (server actions serialize dates as strings)
+      return (result.deliveries || []).map((delivery) => ({
+        ...delivery,
+        deliveredAt:
+          delivery.deliveredAt instanceof Date
+            ? delivery.deliveredAt
+            : new Date(delivery.deliveredAt),
+      }));
+    },
+    enabled: shouldVerifyWebhook && webhookStatus?.configured === true,
     retry: false,
     refetchOnWindowFocus: false,
   });
@@ -610,6 +651,93 @@ export function GitHubIntegrationForm({
                       : "Verify that the webhook is properly configured in your GitHub repository. The webhook will be automatically created when you save the integration if your token has the required permissions."}
                   </FieldDescription>
                 </Field>
+
+                {webhookStatus?.configured && (
+                  <Field>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel>Recent Webhook Deliveries</FieldLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refetchDeliveries()}
+                        disabled={isLoadingDeliveries}
+                      >
+                        <RefreshCw
+                          className={`h-4 w-4 ${isLoadingDeliveries ? "animate-spin" : ""}`}
+                        />
+                      </Button>
+                    </div>
+                    <div className="mt-2">
+                      {isLoadingDeliveries ? (
+                        <p className="text-sm text-muted-foreground">
+                          Loading deliveries...
+                        </p>
+                      ) : webhookDeliveries && webhookDeliveries.length > 0 ? (
+                        <div className="space-y-2">
+                          {webhookDeliveries.map((delivery) => (
+                            <div
+                              key={delivery.id}
+                              className="flex items-center justify-between rounded-lg border p-3 text-sm"
+                            >
+                              <div className="flex flex-col gap-1 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">
+                                    {delivery.event}
+                                  </span>
+                                  {delivery.action && (
+                                    <>
+                                      <span className="text-muted-foreground">
+                                        •
+                                      </span>
+                                      <span className="text-muted-foreground">
+                                        {delivery.action}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Clock className="h-3 w-3" />
+                                  {delivery.deliveredAt.toLocaleString()}
+                                  {delivery.duration > 0 && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{delivery.duration}ms</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <Badge
+                                variant={
+                                  delivery.status === "OK"
+                                    ? "default"
+                                    : delivery.statusCode &&
+                                        delivery.statusCode >= 200 &&
+                                        delivery.statusCode < 300
+                                      ? "default"
+                                      : "destructive"
+                                }
+                              >
+                                {delivery.statusCode || delivery.status}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          No webhook deliveries found yet. Deliveries will
+                          appear here once GitHub sends webhook events to your
+                          endpoint.
+                        </p>
+                      )}
+                    </div>
+                    <FieldDescription>
+                      Shows the last 5 webhook delivery attempts from GitHub.
+                      This helps you monitor if webhooks are being received
+                      successfully.
+                    </FieldDescription>
+                  </Field>
+                )}
 
                 {webhookStatus &&
                   !webhookStatus.configured &&

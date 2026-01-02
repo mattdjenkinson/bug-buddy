@@ -540,3 +540,82 @@ export async function verifyWebhookStatus(projectId: string): Promise<{
     };
   }
 }
+
+/**
+ * Get the last 5 webhook delivery events for a repository
+ */
+export async function getWebhookDeliveries(projectId: string): Promise<{
+  success: boolean;
+  deliveries?: Array<{
+    id: number;
+    guid: string;
+    event: string;
+    action: string | null;
+    deliveredAt: Date;
+    statusCode: number | null;
+    status: string;
+    duration: number;
+    redelivery: boolean;
+  }>;
+  error?: string;
+}> {
+  const integration = await prisma.gitHubIntegration.findUnique({
+    where: { projectId },
+  });
+
+  if (!integration) {
+    return { success: false, error: "GitHub integration not found" };
+  }
+
+  const webhookId = (integration as any).webhookId;
+  if (!webhookId) {
+    return {
+      success: false,
+      error: "Webhook ID not found. Please ensure the webhook is configured.",
+    };
+  }
+
+  const octokit = await getGitHubClient(projectId);
+
+  try {
+    const { data: deliveries } = await octokit.rest.repos.listWebhookDeliveries(
+      {
+        owner: integration.repositoryOwner,
+        repo: integration.repositoryName,
+        hook_id: webhookId,
+        per_page: 5,
+      },
+    );
+
+    const formattedDeliveries = deliveries.map((delivery) => ({
+      id: delivery.id,
+      guid: delivery.guid,
+      event: delivery.event || "unknown",
+      action: delivery.action || null,
+      deliveredAt: new Date(delivery.delivered_at),
+      statusCode: delivery.status_code || null,
+      status: delivery.status || "unknown",
+      duration: delivery.duration || 0,
+      redelivery: delivery.redelivery || false,
+    }));
+
+    return { success: true, deliveries: formattedDeliveries };
+  } catch (error: any) {
+    if (error.status === 404) {
+      return {
+        success: false,
+        error: `Repository ${integration.repositoryOwner}/${integration.repositoryName} or webhook not found`,
+      };
+    }
+    if (error.status === 403) {
+      return {
+        success: false,
+        error: `Permission denied. Your GitHub token needs 'admin:repo_hook' scope to view webhook deliveries.`,
+      };
+    }
+    return {
+      success: false,
+      error: `Failed to fetch webhook deliveries: ${error.message || "Unknown error"}`,
+    };
+  }
+}
