@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WidgetEmbedLoading() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-background">
         <CardHeader>
           <div className="flex items-center justify-between">

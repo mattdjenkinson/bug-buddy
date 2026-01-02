@@ -448,9 +448,7 @@ export default function WidgetEmbedPageContent({
     <>
       <Toaster />
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/10 transition-opacity duration-300 ${
-          isClosing ? "opacity-0" : "opacity-100 fade-in"
-        }`}
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 transition-opacity duration-300 backdrop-blur-xl`}
       >
         <Card
           className={`w-full max-w-4xl max-h-[90vh] overflow-auto transition-all duration-300 ${

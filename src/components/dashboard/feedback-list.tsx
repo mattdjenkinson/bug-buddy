@@ -76,6 +76,7 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const router = useRouter();
   const [limit, setLimit] = React.useState(10);
   const [offset, setOffset] = React.useState(0);
+  const isInitialMount = React.useRef(true);
 
   // Use nuqs for URL state management
   const [urlProjectId, setUrlProjectId] = useQueryState("projectId", {
@@ -93,6 +94,21 @@ export function FeedbackList({ projects, initialFeedback }: FeedbackListProps) {
   const [urlSortOrder, setUrlSortOrder] = useQueryState("sortOrder", {
     defaultValue: "desc",
   });
+
+  // Refresh server data when URL params change (but not on initial mount)
+  React.useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    // Reset pagination when filters/sorting change
+    setOffset(0);
+    // Small delay to ensure URL is updated by nuqs
+    const timer = setTimeout(() => {
+      router.refresh();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [urlProjectId, urlStatus, urlTitle, urlSortBy, urlSortOrder, router]);
 
   // Apply client-side pagination to the feedback array
   const paginatedFeedback = React.useMemo(() => {

@@ -746,16 +746,16 @@
             container.parentNode.removeChild(container);
           }
 
-          // Don't restore button here - wait until iframe is closed
-          // Just restore cursor and pointer events so button looks normal
-          if (button) {
+          // Restore button to original state since we're not opening the iframe
+          if (button && originalButtonState) {
+            button.innerHTML = originalButtonState.text || config.buttonText;
+            button.style.opacity = originalButtonState.opacity || "";
             button.style.cursor = originalButtonState.cursor || "";
             button.style.pointerEvents =
               originalButtonState.pointerEvents || "";
           }
           console.error("Failed to capture screenshot:", err);
-          // Still open the modal without screenshot - user can still submit feedback
-          openEmbedFrame(null, originalButtonState);
+          // Don't open the iframe if screenshot fails
         });
     }
   }

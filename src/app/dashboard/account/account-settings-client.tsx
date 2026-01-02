@@ -193,7 +193,6 @@ export function AccountSettingsClient() {
     const providerMap: Record<string, string> = {
       github: "GitHub",
       google: "Google",
-      discord: "Discord",
     };
     return providerMap[providerId] || providerId;
   };
