@@ -768,6 +768,7 @@
     // Don't include screenshot in URL to avoid 431 error (Request Header Fields Too Large)
     iframe.src = `${config.appUrl}/widget/embed?projectKey=${config.projectKey || ""}&url=${encodeURIComponent(window.location.href)}`;
     iframe.setAttribute("allowtransparency", "true");
+    // Hide iframe initially to prevent white flash, show when loaded
     iframe.style.cssText = `
       position: fixed;
       top: 0;
@@ -778,6 +779,7 @@
       z-index: 9999999;
       background: transparent;
       background-color: transparent;
+      visibility: hidden;
     `;
 
     document.body.appendChild(iframe);
@@ -828,6 +830,8 @@
 
     // Send screenshot data via postMessage once iframe loads
     iframe.onload = function () {
+      // Show iframe once loaded to prevent white flash
+      iframe.style.visibility = "visible";
       // Wait a bit for React to initialize, then send screenshot
       setTimeout(sendScreenshot, 200);
       // Also try sending immediately
