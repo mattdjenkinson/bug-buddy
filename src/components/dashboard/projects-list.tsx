@@ -17,6 +17,7 @@ import Link from "next/link";
 import posthog from "posthog-js";
 import * as React from "react";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CreateProjectDialog } from "./create-project-dialog";
 
 interface ProjectsListProps {
@@ -25,6 +26,7 @@ interface ProjectsListProps {
     name: string;
     description: string | null;
     apiKey: string;
+    secretKey: string | null;
     createdAt: string;
     _count: {
       feedback: number;
@@ -48,8 +50,15 @@ export function ProjectsList({
   // Handle GitHub connection success/error from query params
   useGitHubConnectionStatus();
 
-  const handleProjectCreated = (project: ProjectsListProps["projects"][0]) => {
-    setProjects([project, ...projects]);
+  const handleProjectCreated = (
+    project: Omit<ProjectsListProps["projects"][0], "secretKey"> & {
+      secretKey?: string | null;
+    },
+  ) => {
+    setProjects([
+      { ...project, secretKey: project.secretKey ?? null },
+      ...projects,
+    ]);
   };
 
   const copyApiKey = (apiKey: string, projectId: string) => {
@@ -57,8 +66,8 @@ export function ProjectsList({
     setCopiedKey(apiKey);
     setTimeout(() => setCopiedKey(null), 2000);
 
-    // Track API key copy
-    posthog.capture("api_key_copied", {
+    // Track client key copy
+    posthog.capture("client_key_copied", {
       project_id: projectId,
     });
   };
@@ -67,6 +76,7 @@ export function ProjectsList({
     const appUrl = getBaseUrlClient();
     // Use stable /widget.js URL that always serves the latest version
     // The route handler will automatically resolve to the current minified version
+
     const embedCode = `<script src="${appUrl}/widget.js" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
     navigator.clipboard.writeText(embedCode);
     toast.success("Embed code copied to clipboard!");
@@ -116,7 +126,7 @@ export function ProjectsList({
               )}
               <div className="mt-auto gap-4 flex flex-col">
                 <div className="space-y-2">
-                  <FieldLabel className="text-xs">API Key</FieldLabel>
+                  <FieldLabel className="text-xs">Client Key</FieldLabel>
                   <div className="flex gap-2 mt-1">
                     <Input
                       value={project.apiKey}
@@ -145,14 +155,19 @@ export function ProjectsList({
                     <Code className="h-4 w-4" />
                     Copy Embed Code
                   </Button>
-                  <Button variant="outline" size="icon" asChild>
-                    <Link
-                      href={`/dashboard/settings?project=${project.id}`}
-                      aria-label="Project settings"
-                    >
-                      <Settings2 className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" asChild>
+                        <Link
+                          href={`/dashboard/settings?project=${project.id}`}
+                          aria-label="Project settings"
+                        >
+                          <Settings2 className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Project settings</TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </CardContent>

@@ -72,14 +72,16 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       throw error;
     }
 
-    // Generate API key
+    // Generate API key and secret key
     const apiKey = `bb_${randomBytes(32).toString("hex")}`;
+    const secretKey = `bb_sk_${randomBytes(32).toString("hex")}`;
 
     const project = await prisma.project.create({
       data: {
         name: validated.name,
         description: validated.description || null,
         apiKey,
+        secretKey,
         userId: session.user.id,
       },
       include: {

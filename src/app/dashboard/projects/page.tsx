@@ -30,6 +30,7 @@ export default async function ProjectsPage({
     name: project.name,
     description: project.description,
     apiKey: project.apiKey,
+    secretKey: project.secretKey,
     createdAt: project.createdAt.toISOString(),
     _count: project._count,
     githubIntegration: project.githubIntegration

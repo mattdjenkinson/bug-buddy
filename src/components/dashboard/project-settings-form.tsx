@@ -27,9 +27,19 @@ import { Input } from "@/components/ui/input";
 import { DOMAIN_REGEX } from "@/lib/schemas";
 import { deleteProject } from "@/server/actions/projects/delete";
 import { refreshApiKey } from "@/server/actions/projects/refresh-api-key";
+import { refreshSecretKey } from "@/server/actions/projects/refresh-secret-key";
 import { updateProject } from "@/server/actions/projects/update";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Copy, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  Plus,
+  RefreshCw,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -55,6 +65,7 @@ interface ProjectSettingsFormProps {
   projectId: string;
   projectName: string;
   apiKey: string;
+  secretKey: string | null;
   allowedDomains?: string[];
 }
 
@@ -62,16 +73,24 @@ export function ProjectSettingsForm({
   projectId,
   projectName,
   apiKey,
+  secretKey: initialSecretKey,
   allowedDomains = [],
 }: ProjectSettingsFormProps) {
   const router = useRouter();
   const [saving, setSaving] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshingSecret, setRefreshingSecret] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [showRefreshDialog, setShowRefreshDialog] = React.useState(false);
+  const [showRefreshSecretDialog, setShowRefreshSecretDialog] =
+    React.useState(false);
   const [currentApiKey, setCurrentApiKey] = React.useState(apiKey);
+  const [currentSecretKey, setCurrentSecretKey] =
+    React.useState(initialSecretKey);
+  const [showSecretKey, setShowSecretKey] = React.useState(false);
   const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
+  const [copiedSecretKey, setCopiedSecretKey] = React.useState(false);
   const [newDomain, setNewDomain] = React.useState("");
   const [savingDomains, setSavingDomains] = React.useState(false);
   const [domainError, setDomainError] = React.useState<string | null>(null);
@@ -126,8 +145,10 @@ export function ProjectSettingsForm({
 
   React.useEffect(() => {
     setCurrentApiKey(apiKey);
+    setCurrentSecretKey(initialSecretKey);
     setCopiedKey(null);
-  }, [apiKey, projectId]);
+    setCopiedSecretKey(false);
+  }, [apiKey, initialSecretKey, projectId]);
 
   const saveAllowedDomains = async (domains: string[]) => {
     setSavingDomains(true);
@@ -215,22 +236,47 @@ export function ProjectSettingsForm({
       const result = await refreshApiKey({ projectId });
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to refresh API key");
+        throw new Error(result.error || "Failed to refresh client key");
       }
 
       if (result.apiKey) {
         setCurrentApiKey(result.apiKey);
-        toast.success("API key refreshed successfully!");
+        toast.success("Client key refreshed successfully!");
         router.refresh();
       }
     } catch (error) {
-      console.error("Error refreshing API key:", error);
+      console.error("Error refreshing client key:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to refresh API key",
+        error instanceof Error ? error.message : "Failed to refresh client key",
       );
     } finally {
       setRefreshing(false);
       setShowRefreshDialog(false);
+    }
+  };
+
+  const handleRefreshSecretKey = async () => {
+    setRefreshingSecret(true);
+    try {
+      const result = await refreshSecretKey({ projectId });
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to refresh secret key");
+      }
+
+      if (result.secretKey) {
+        setCurrentSecretKey(result.secretKey);
+        toast.success("Secret key refreshed successfully!");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error refreshing secret key:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to refresh secret key",
+      );
+    } finally {
+      setRefreshingSecret(false);
+      setShowRefreshSecretDialog(false);
     }
   };
 
@@ -259,8 +305,16 @@ export function ProjectSettingsForm({
   const copyApiKey = () => {
     navigator.clipboard.writeText(currentApiKey);
     setCopiedKey(currentApiKey);
-    toast.success("API key copied to clipboard!");
+    toast.success("Client key copied to clipboard!");
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const copySecretKey = () => {
+    if (!currentSecretKey) return;
+    navigator.clipboard.writeText(currentSecretKey);
+    setCopiedSecretKey(true);
+    toast.success("Secret key copied to clipboard!");
+    setTimeout(() => setCopiedSecretKey(false), 2000);
   };
 
   return (
@@ -269,7 +323,8 @@ export function ProjectSettingsForm({
         <CardHeader>
           <CardTitle>Project Settings</CardTitle>
           <CardDescription>
-            Manage your project name, API key, and delete the project
+            Manage your project name, client key, secret key, and delete the
+            project
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -380,7 +435,7 @@ export function ProjectSettingsForm({
           <div className="mt-6 border-t pt-6">
             <Field>
               <FieldLabel className="flex items-center gap-2">
-                API Key {refreshing && <Spinner className="size-3" />}
+                Client Key {refreshing && <Spinner className="size-3" />}
               </FieldLabel>
               <div className="flex gap-2">
                 <Input
@@ -402,8 +457,7 @@ export function ProjectSettingsForm({
                 </Button>
               </div>
               <FieldDescription>
-                Your API key is used to authenticate widget requests. Keep it
-                secure.
+                Your client key is used to identify your widget. Keep it secure.
               </FieldDescription>
             </Field>
 
@@ -415,7 +469,67 @@ export function ProjectSettingsForm({
               className="mt-2"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh API Key
+              Refresh Client Key
+            </Button>
+          </div>
+
+          <div className="mt-6 border-t pt-6">
+            <Field>
+              <FieldLabel className="flex items-center gap-2">
+                Secret Key {refreshingSecret && <Spinner className="size-3" />}
+              </FieldLabel>
+              <div className="flex gap-2">
+                <div className="relative flex-1 max-w-xs">
+                  <Input
+                    type={showSecretKey ? "text" : "password"}
+                    value={currentSecretKey || ""}
+                    readOnly
+                    className="font-mono text-xs pr-10"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="absolute right-0 top-0 h-full"
+                    onClick={() => setShowSecretKey(!showSecretKey)}
+                  >
+                    {showSecretKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  type="button"
+                  onClick={copySecretKey}
+                  disabled={!currentSecretKey}
+                >
+                  {copiedSecretKey ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <FieldDescription>
+                Your secret key is used to authenticate widget requests when no
+                allowed domains are configured. Keep it secure and never share
+                it publicly.
+              </FieldDescription>
+            </Field>
+
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setShowRefreshSecretDialog(true)}
+              disabled={refreshingSecret}
+              className="mt-2"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Secret Key
             </Button>
           </div>
 
@@ -444,10 +558,11 @@ export function ProjectSettingsForm({
       <Dialog open={showRefreshDialog} onOpenChange={setShowRefreshDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Refresh API Key</DialogTitle>
+            <DialogTitle>Refresh Client Key</DialogTitle>
             <DialogDescription>
-              Are you sure you want to refresh the API key? The old key will no
-              longer work and you&apos;ll need to update any widgets using it.
+              Are you sure you want to refresh the client key? The old key will
+              no longer work and you&apos;ll need to update any widgets using
+              it.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -464,7 +579,40 @@ export function ProjectSettingsForm({
               disabled={refreshing}
               loading={refreshing}
             >
-              Refresh API Key
+              Refresh Client Key
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showRefreshSecretDialog}
+        onOpenChange={setShowRefreshSecretDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Refresh Secret Key</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to refresh the secret key? The old key will
+              no longer work and you&apos;ll need to update any widgets using
+              it.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowRefreshSecretDialog(false)}
+              disabled={refreshingSecret}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleRefreshSecretKey}
+              disabled={refreshingSecret}
+              loading={refreshingSecret}
+            >
+              Refresh Secret Key
             </Button>
           </DialogFooter>
         </DialogContent>

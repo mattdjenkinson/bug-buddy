@@ -95,16 +95,36 @@ export const widgetSubmitFormSchema = z.object({
     .max(1000, "Description must be at most 1000 characters."),
   name: z.string().optional(),
   email: z.email("Invalid email address.").optional().or(z.literal("")),
+  githubUsername: z
+    .string()
+    .min(1, "GitHub username must be at least 1 character")
+    .max(39, "GitHub username must be at most 39 characters")
+    .regex(
+      /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
+      "Invalid GitHub username format (alphanumeric and hyphens only, cannot start/end with hyphen)",
+    )
+    .optional()
+    .or(z.literal("")),
 });
 
 export const widgetSubmitSchema = z.object({
   projectKey: z.string().min(1),
+  secretKey: z.string().min(1, "Secret key is required"),
   title: z.string().min(1),
   description: z.string().min(1),
   screenshot: z.string(),
   annotations: z.string().optional(),
   userName: z.string().optional(),
   userEmail: z.email().optional().or(z.literal("")),
+  githubUsername: z
+    .string()
+    .min(1, "GitHub username must be at least 1 character")
+    .max(39, "GitHub username must be at most 39 characters")
+    .regex(
+      /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
+      "Invalid GitHub username format (alphanumeric and hyphens only, cannot start/end with hyphen)",
+    )
+    .optional(),
   url: z.string().optional(),
   userAgent: z.string().optional(),
   deviceInfo: z
@@ -132,6 +152,8 @@ export const widgetSubmitSchema = z.object({
 
 // Widget Upload Schema
 export const widgetUploadSchema = z.object({
+  projectKey: z.string().min(1, "Project key is required"),
+  secretKey: z.string().min(1, "Secret key is required"),
   image: z.string().min(1, "Image data is required"),
 });
 

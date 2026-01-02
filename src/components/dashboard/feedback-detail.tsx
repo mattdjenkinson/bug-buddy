@@ -10,6 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { closeIssue } from "@/server/actions/github/close-issue";
 import {
   Calendar,
@@ -147,6 +153,8 @@ function parseUserAgent(userAgent: string) {
 export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
   const router = useRouter();
   const [closing, setClosing] = React.useState(false);
+  const [isScreenshotDialogOpen, setIsScreenshotDialogOpen] =
+    React.useState(false);
 
   const userAgentInfo = feedback.userAgent
     ? parseUserAgent(feedback.userAgent)
@@ -219,15 +227,63 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
           <CardHeader>
             <CardTitle>Screenshot</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="relative w-full aspect-video rounded-lg border overflow-hidden bg-gray-50">
+          <CardContent className="space-y-4">
+            <div className="relative w-full aspect-video rounded-lg border overflow-hidden  cursor-pointer hover:opacity-90 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={feedback.screenshot}
                 alt="Screenshot"
-                className="object-contain"
+                className="object-contain w-full h-full"
+                onClick={() => setIsScreenshotDialogOpen(true)}
               />
             </div>
+            {feedback.annotations &&
+              (() => {
+                try {
+                  const parsedAnnotations = JSON.parse(feedback.annotations);
+                  if (
+                    Array.isArray(parsedAnnotations) &&
+                    parsedAnnotations.length > 0
+                  ) {
+                    return (
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm mb-2">
+                          Annotations
+                        </h4>
+                        <div className="space-y-2">
+                          {parsedAnnotations.map(
+                            (ann: {
+                              number: number;
+                              text: string;
+                              x: number;
+                              y: number;
+                            }) => (
+                              <div
+                                key={ann.number}
+                                className="flex flex-col gap-1 text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">
+                                    #{ann.number}
+                                  </span>
+                                </div>
+                                {ann.text && (
+                                  <p className="text-muted-foreground ml-6">
+                                    {ann.text}
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                } catch {
+                  // If parsing fails, don't show annotations
+                }
+                return null;
+              })()}
           </CardContent>
         </Card>
 
@@ -539,6 +595,26 @@ export function FeedbackDetail({ feedback }: FeedbackDetailProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Screenshot Dialog */}
+      <Dialog
+        open={isScreenshotDialogOpen}
+        onOpenChange={setIsScreenshotDialogOpen}
+      >
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Screenshot</DialogTitle>
+          </DialogHeader>
+          <div className="relative w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={feedback.screenshot}
+              alt="Screenshot"
+              className="w-full h-auto rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

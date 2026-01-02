@@ -214,7 +214,7 @@ export function CreateProjectDialog({
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
-            Create a new project to get an API key for embedding the feedback
+            Create a new project to get a client key for embedding the feedback
             widget.
           </DialogDescription>
         </DialogHeader>

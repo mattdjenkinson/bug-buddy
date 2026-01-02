@@ -31,6 +31,7 @@ interface SettingsFormProps {
     id: string;
     name: string;
     apiKey: string;
+    secretKey: string | null;
     allowedDomains: string[];
     githubIntegration: {
       id: string;
@@ -283,6 +284,7 @@ export function SettingsForm({ projects }: SettingsFormProps) {
               projectId={selectedProject}
               projectName={selectedProjectData.name}
               apiKey={selectedProjectData.apiKey}
+              secretKey={selectedProjectData.secretKey}
               allowedDomains={selectedProjectData.allowedDomains}
             />
           )}

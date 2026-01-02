@@ -85,6 +85,7 @@ model Project {
     id             String   @id @default(cuid())
     name           String
     apiKey         String   @unique
+    secretKey      String?  @unique
     description    String?
     allowedDomains String[] @default([])
     userId         String

@@ -28,6 +28,7 @@ export type ProjectMinAggregateOutputType = {
   id: string | null
   name: string | null
   apiKey: string | null
+  secretKey: string | null
   description: string | null
   userId: string | null
   createdAt: Date | null
@@ -38,6 +39,7 @@ export type ProjectMaxAggregateOutputType = {
   id: string | null
   name: string | null
   apiKey: string | null
+  secretKey: string | null
   description: string | null
   userId: string | null
   createdAt: Date | null
@@ -48,6 +50,7 @@ export type ProjectCountAggregateOutputType = {
   id: number
   name: number
   apiKey: number
+  secretKey: number
   description: number
   allowedDomains: number
   userId: number
@@ -61,6 +64,7 @@ export type ProjectMinAggregateInputType = {
   id?: true
   name?: true
   apiKey?: true
+  secretKey?: true
   description?: true
   userId?: true
   createdAt?: true
@@ -71,6 +75,7 @@ export type ProjectMaxAggregateInputType = {
   id?: true
   name?: true
   apiKey?: true
+  secretKey?: true
   description?: true
   userId?: true
   createdAt?: true
@@ -81,6 +86,7 @@ export type ProjectCountAggregateInputType = {
   id?: true
   name?: true
   apiKey?: true
+  secretKey?: true
   description?: true
   allowedDomains?: true
   userId?: true
@@ -165,6 +171,7 @@ export type ProjectGroupByOutputType = {
   id: string
   name: string
   apiKey: string
+  secretKey: string | null
   description: string | null
   allowedDomains: string[]
   userId: string
@@ -197,6 +204,7 @@ export type ProjectWhereInput = {
   id?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   apiKey?: Prisma.StringFilter<"Project"> | string
+  secretKey?: Prisma.StringNullableFilter<"Project"> | string | null
   description?: Prisma.StringNullableFilter<"Project"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Project">
   userId?: Prisma.StringFilter<"Project"> | string
@@ -212,6 +220,7 @@ export type ProjectOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
+  secretKey?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -226,6 +235,7 @@ export type ProjectOrderByWithRelationInput = {
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   apiKey?: string
+  secretKey?: string
   AND?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
   OR?: Prisma.ProjectWhereInput[]
   NOT?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
@@ -239,12 +249,13 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   feedback?: Prisma.FeedbackListRelationFilter
   githubIntegration?: Prisma.XOR<Prisma.GitHubIntegrationNullableScalarRelationFilter, Prisma.GitHubIntegrationWhereInput> | null
   widgetCustomization?: Prisma.XOR<Prisma.WidgetCustomizationNullableScalarRelationFilter, Prisma.WidgetCustomizationWhereInput> | null
-}, "id" | "apiKey">
+}, "id" | "apiKey" | "secretKey">
 
 export type ProjectOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
+  secretKey?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -262,6 +273,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Project"> | string
   name?: Prisma.StringWithAggregatesFilter<"Project"> | string
   apiKey?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  secretKey?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Project">
   userId?: Prisma.StringWithAggregatesFilter<"Project"> | string
@@ -273,6 +285,7 @@ export type ProjectCreateInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -287,6 +300,7 @@ export type ProjectUncheckedCreateInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   userId: string
@@ -301,6 +315,7 @@ export type ProjectUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -315,6 +330,7 @@ export type ProjectUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -329,6 +345,7 @@ export type ProjectCreateManyInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   userId: string
@@ -340,6 +357,7 @@ export type ProjectUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -350,6 +368,7 @@ export type ProjectUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -379,6 +398,7 @@ export type ProjectCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
+  secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
   allowedDomains?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -390,6 +410,7 @@ export type ProjectMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
+  secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -400,6 +421,7 @@ export type ProjectMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
+  secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -508,6 +530,7 @@ export type ProjectCreateWithoutUserInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -521,6 +544,7 @@ export type ProjectUncheckedCreateWithoutUserInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -563,6 +587,7 @@ export type ProjectScalarWhereInput = {
   id?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   apiKey?: Prisma.StringFilter<"Project"> | string
+  secretKey?: Prisma.StringNullableFilter<"Project"> | string | null
   description?: Prisma.StringNullableFilter<"Project"> | string | null
   allowedDomains?: Prisma.StringNullableListFilter<"Project">
   userId?: Prisma.StringFilter<"Project"> | string
@@ -574,6 +599,7 @@ export type ProjectCreateWithoutFeedbackInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -587,6 +613,7 @@ export type ProjectUncheckedCreateWithoutFeedbackInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   userId: string
@@ -616,6 +643,7 @@ export type ProjectUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -629,6 +657,7 @@ export type ProjectUncheckedUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -642,6 +671,7 @@ export type ProjectCreateWithoutGithubIntegrationInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -655,6 +685,7 @@ export type ProjectUncheckedCreateWithoutGithubIntegrationInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   userId: string
@@ -684,6 +715,7 @@ export type ProjectUpdateWithoutGithubIntegrationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -697,6 +729,7 @@ export type ProjectUncheckedUpdateWithoutGithubIntegrationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -710,6 +743,7 @@ export type ProjectCreateWithoutWidgetCustomizationInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -723,6 +757,7 @@ export type ProjectUncheckedCreateWithoutWidgetCustomizationInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   userId: string
@@ -752,6 +787,7 @@ export type ProjectUpdateWithoutWidgetCustomizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -765,6 +801,7 @@ export type ProjectUncheckedUpdateWithoutWidgetCustomizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -778,6 +815,7 @@ export type ProjectCreateManyUserInput = {
   id?: string
   name: string
   apiKey: string
+  secretKey?: string | null
   description?: string | null
   allowedDomains?: Prisma.ProjectCreateallowedDomainsInput | string[]
   createdAt?: Date | string
@@ -788,6 +826,7 @@ export type ProjectUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -801,6 +840,7 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -814,6 +854,7 @@ export type ProjectUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
+  secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   allowedDomains?: Prisma.ProjectUpdateallowedDomainsInput | string[]
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -855,6 +896,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   name?: boolean
   apiKey?: boolean
+  secretKey?: boolean
   description?: boolean
   allowedDomains?: boolean
   userId?: boolean
@@ -871,6 +913,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   apiKey?: boolean
+  secretKey?: boolean
   description?: boolean
   allowedDomains?: boolean
   userId?: boolean
@@ -883,6 +926,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   name?: boolean
   apiKey?: boolean
+  secretKey?: boolean
   description?: boolean
   allowedDomains?: boolean
   userId?: boolean
@@ -895,6 +939,7 @@ export type ProjectSelectScalar = {
   id?: boolean
   name?: boolean
   apiKey?: boolean
+  secretKey?: boolean
   description?: boolean
   allowedDomains?: boolean
   userId?: boolean
@@ -902,7 +947,7 @@ export type ProjectSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "apiKey" | "description" | "allowedDomains" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "apiKey" | "secretKey" | "description" | "allowedDomains" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   feedback?: boolean | Prisma.Project$feedbackArgs<ExtArgs>
@@ -929,6 +974,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     name: string
     apiKey: string
+    secretKey: string | null
     description: string | null
     allowedDomains: string[]
     userId: string
@@ -1364,6 +1410,7 @@ export interface ProjectFieldRefs {
   readonly id: Prisma.FieldRef<"Project", 'String'>
   readonly name: Prisma.FieldRef<"Project", 'String'>
   readonly apiKey: Prisma.FieldRef<"Project", 'String'>
+  readonly secretKey: Prisma.FieldRef<"Project", 'String'>
   readonly description: Prisma.FieldRef<"Project", 'String'>
   readonly allowedDomains: Prisma.FieldRef<"Project", 'String[]'>
   readonly userId: Prisma.FieldRef<"Project", 'String'>

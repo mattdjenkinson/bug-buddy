@@ -1,13 +1,39 @@
 "use server";
 
 import { widgetUploadSchema } from "@/lib/schemas";
+import {
+  validateDomainForAction,
+  validateSecretKeyForAction,
+} from "@/lib/widget-api-helpers";
 import { put } from "@vercel/blob";
 import { z } from "zod";
 
-export async function uploadImage(data: z.infer<typeof widgetUploadSchema>) {
+export async function uploadWidgetImage(data: {
+  projectKey: string;
+  secretKey: string;
+  image: string;
+}) {
   try {
     const validated = widgetUploadSchema.parse(data);
-    const { image } = validated;
+    const { image, projectKey, secretKey } = validated;
+
+    // Validate domain first (if configured)
+    const domainValidation = await validateDomainForAction(projectKey);
+    if (!domainValidation.isValid) {
+      return {
+        success: false,
+        error: domainValidation.error || "Domain not allowed",
+      };
+    }
+
+    // Validate secret key
+    const validation = await validateSecretKeyForAction(projectKey, secretKey);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        error: "Invalid secret key",
+      };
+    }
 
     // Check if it's a base64 data URL
     const base64Match = image.match(/^data:image\/(\w+);base64,(.+)$/);
@@ -29,15 +55,6 @@ export async function uploadImage(data: z.infer<typeof widgetUploadSchema>) {
 
     // Convert base64 to buffer
     const buffer = Buffer.from(base64Data, "base64");
-
-    // Limit image size to 500KB
-    const maxSize = 500 * 1024; // 500KB
-    if (buffer.length > maxSize) {
-      return {
-        success: false,
-        error: "Image size exceeds 500KB limit",
-      };
-    }
 
     // Generate unique filename
     const timestamp = Date.now();

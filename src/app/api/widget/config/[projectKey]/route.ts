@@ -1,3 +1,4 @@
+import { getGitHubClient } from "@/lib/github";
 import { getProjectByApiKey } from "@/server/services/projects.service";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -74,35 +75,63 @@ export async function GET(
         );
       }
 
-      // Check if origin/referer matches any allowed domain
-      const isAllowed = allowedDomains.some((domain: string) => {
-        // Remove protocol if present
-        const cleanDomain = domain
-          .replace(/^https?:\/\//, "")
-          .replace(/\/$/, "");
-        // Support exact match or subdomain match
-        return (
-          requestHost === cleanDomain || requestHost.endsWith(`.${cleanDomain}`)
-        );
-      });
+      // Always allow localhost for development
+      const isLocalhost =
+        requestHost === "localhost" ||
+        requestHost.startsWith("localhost:") ||
+        requestHost === "127.0.0.1" ||
+        requestHost.startsWith("127.0.0.1:");
 
-      if (!isAllowed) {
-        return NextResponse.json(
-          { error: "Domain not allowed" },
-          {
-            status: 403,
-            headers: {
-              "Access-Control-Allow-Origin": origin || "*",
-              "Access-Control-Allow-Methods": "GET, OPTIONS",
-              "Access-Control-Allow-Headers": "Content-Type",
+      // Check if origin/referer matches any allowed domain (skip check for localhost)
+      if (!isLocalhost) {
+        const isAllowed = allowedDomains.some((domain: string) => {
+          // Remove protocol if present
+          const cleanDomain = domain
+            .replace(/^https?:\/\//, "")
+            .replace(/\/$/, "");
+          // Support exact match or subdomain match
+          return (
+            requestHost === cleanDomain ||
+            requestHost.endsWith(`.${cleanDomain}`)
+          );
+        });
+
+        if (!isAllowed) {
+          return NextResponse.json(
+            { error: "Domain not allowed" },
+            {
+              status: 403,
+              headers: {
+                "Access-Control-Allow-Origin": origin || "*",
+                "Access-Control-Allow-Methods": "GET, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+              },
             },
-          },
-        );
+          );
+        }
       }
     }
 
     // Determine CORS header - use origin if allowed, otherwise allow all
     const corsOrigin = allowedDomains.length > 0 && origin ? origin : "*";
+
+    // Check if GitHub integration exists and if repo is public
+    let isPublicRepo = false;
+    if (project.githubIntegration) {
+      try {
+        // Try to get GitHub client to check repo visibility
+        const octokit = await getGitHubClient(project.id);
+        const { data: repo } = await octokit.rest.repos.get({
+          owner: project.githubIntegration.repositoryOwner,
+          repo: project.githubIntegration.repositoryName,
+        });
+        isPublicRepo = !repo.private;
+      } catch {
+        // If we can't check (e.g., no auth), assume private for safety
+        // We could also try without auth for public repos, but this is safer
+        isPublicRepo = false;
+      }
+    }
 
     return NextResponse.json(
       {
@@ -122,6 +151,14 @@ export async function GET(
               buttonPosition: project.widgetCustomization.buttonPosition,
             }
           : null,
+        githubIntegration:
+          project.githubIntegration && isPublicRepo
+            ? {
+                repositoryOwner: project.githubIntegration.repositoryOwner,
+                repositoryName: project.githubIntegration.repositoryName,
+                isPublic: true,
+              }
+            : null,
       },
       {
         headers: {

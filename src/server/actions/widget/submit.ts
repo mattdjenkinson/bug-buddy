@@ -1,9 +1,14 @@
 "use server";
 
 import { createGitHubIssue } from "@/lib/github";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { getPostHogClient, shutdownPostHog } from "@/lib/posthog-server";
 import { prisma } from "@/lib/prisma";
+import { combinedRatelimit, getClientIP } from "@/lib/rate-limit";
 import { widgetSubmitSchema } from "@/lib/schemas";
+import {
+  validateDomainForAction,
+  validateSecretKeyForAction,
+} from "@/lib/widget-api-helpers";
 import { after } from "next/server";
 import { UAParser } from "ua-parser-js";
 import { z } from "zod";
@@ -55,11 +60,88 @@ function parseUserAgent(userAgent: string | null | undefined): string {
   }
 }
 
-export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
+export async function submitWidgetFeedback(data: {
+  projectKey: string;
+  secretKey: string;
+  title: string;
+  description: string;
+  screenshot: string;
+  annotations?: string;
+  userName?: string;
+  userEmail?: string;
+  githubUsername?: string;
+  url?: string;
+  userAgent?: string;
+  deviceInfo?: {
+    deviceType?: string;
+    browser?: string;
+    screenSize?: { width: number; height: number };
+    viewportSize?: { width: number; height: number };
+    os?: string;
+    zoomLevel?: number;
+    pixelRatio?: number;
+  };
+}) {
   try {
     const validated = widgetSubmitSchema.parse(data);
 
-    // Find project by API key
+    const clientIP = await getClientIP();
+
+    const combinedLimit = await combinedRatelimit.limit(
+      `ip:${clientIP}:project:${validated.projectKey}`,
+    );
+
+    if (!combinedLimit.success) {
+      console.info("Rate limit exceeded:", {
+        ip: clientIP,
+        projectKey: validated.projectKey,
+        limit: combinedLimit.limit,
+        remaining: combinedLimit.remaining,
+        reset: combinedLimit.reset,
+      });
+
+      after(() => {
+        getPostHogClient().capture({
+          distinctId: validated.projectKey,
+          event: "rate_limit_exceeded",
+          properties: {
+            ip: clientIP,
+            projectKey: validated.projectKey,
+          },
+        });
+
+        shutdownPostHog();
+      });
+      return {
+        success: false,
+        error: "Rate limit exceeded. Please try again later.",
+      };
+    }
+
+    // Validate domain first (if configured)
+    const domainValidation = await validateDomainForAction(
+      validated.projectKey,
+    );
+    if (!domainValidation.isValid) {
+      return {
+        success: false,
+        error: domainValidation.error || "Domain not allowed",
+      };
+    }
+
+    // Validate secret key
+    const validation = await validateSecretKeyForAction(
+      validated.projectKey,
+      validated.secretKey,
+    );
+    if (!validation.isValid) {
+      return {
+        success: false,
+        error: "Invalid secret key",
+      };
+    }
+
+    // Find project by API key (with relations)
     const project = await prisma.project.findUnique({
       where: { apiKey: validated.projectKey },
       include: {
@@ -113,48 +195,90 @@ export async function submitFeedback(data: z.infer<typeof widgetSubmitSchema>) {
         pixelRatio?: number;
       } | null;
       const feedbackId = feedback.id;
+      const githubUsername = validated.githubUsername;
 
-      after(async () => {
+      // Defer GitHub issue creation - don't await, let it run in background
+      void (async () => {
         try {
           // Parse user agent to get browser and OS info
           const userAgentInfo = parseUserAgent(feedbackUserAgent);
 
-          // Format device info for GitHub issue
+          // Format device info for GitHub issue as a markdown table
           let deviceInfoSection = "";
           if (feedbackDeviceInfo) {
-            const parts: string[] = [];
+            const rows: string[] = [];
             if (feedbackDeviceInfo.deviceType) {
-              parts.push(`**Device type:** ${feedbackDeviceInfo.deviceType}`);
+              rows.push(`| Device Type | ${feedbackDeviceInfo.deviceType} |`);
             }
             if (feedbackDeviceInfo.browser) {
-              parts.push(`**Browser:** ${feedbackDeviceInfo.browser}`);
-            }
-            if (feedbackDeviceInfo.screenSize) {
-              parts.push(
-                `**Screen Size:** ${feedbackDeviceInfo.screenSize.width} x ${feedbackDeviceInfo.screenSize.height}`,
-              );
+              rows.push(`| Browser | ${feedbackDeviceInfo.browser} |`);
             }
             if (feedbackDeviceInfo.os) {
-              parts.push(`**OS:** ${feedbackDeviceInfo.os}`);
+              rows.push(`| OS | ${feedbackDeviceInfo.os} |`);
+            }
+            if (feedbackDeviceInfo.screenSize) {
+              rows.push(
+                `| Screen Size | ${feedbackDeviceInfo.screenSize.width} x ${feedbackDeviceInfo.screenSize.height} |`,
+              );
             }
             if (feedbackDeviceInfo.viewportSize) {
-              parts.push(
-                `**Viewport Size:** ${feedbackDeviceInfo.viewportSize.width} x ${feedbackDeviceInfo.viewportSize.height}`,
+              rows.push(
+                `| Viewport Size | ${feedbackDeviceInfo.viewportSize.width} x ${feedbackDeviceInfo.viewportSize.height} |`,
               );
             }
             if (feedbackDeviceInfo.zoomLevel !== undefined) {
-              parts.push(`**Zoom Level:** ${feedbackDeviceInfo.zoomLevel}%`);
+              rows.push(`| Zoom Level | ${feedbackDeviceInfo.zoomLevel}% |`);
             }
             if (feedbackDeviceInfo.pixelRatio !== undefined) {
-              parts.push(`**Pixel Ratio:** @${feedbackDeviceInfo.pixelRatio}x`);
+              rows.push(`| Pixel Ratio | ${feedbackDeviceInfo.pixelRatio}x |`);
             }
-            if (parts.length > 0) {
-              deviceInfoSection = `\n### Device Information\n${parts.join("\n")}`;
+            if (rows.length > 0) {
+              deviceInfoSection = `\n### Device Information\n\n| Property | Value |\n|----------|-------|\n${rows.join("\n")}`;
+            }
+          }
+
+          // Parse and format annotations
+          let annotationsSection = "";
+          if (feedbackAnnotations) {
+            try {
+              const parsedAnnotations = JSON.parse(feedbackAnnotations);
+              if (
+                Array.isArray(parsedAnnotations) &&
+                parsedAnnotations.length > 0
+              ) {
+                const annotationItems = parsedAnnotations
+                  .map(
+                    (ann: {
+                      number: number;
+                      text: string;
+                      x: number;
+                      y: number;
+                    }) =>
+                      ann.text
+                        ? `${ann.number}. ${ann.text}`
+                        : `${ann.number}.`,
+                  )
+                  .join("\n");
+                annotationsSection = `\n### Annotations\n\n${annotationItems}`;
+              }
+            } catch {
+              // If parsing fails, fall back to showing raw JSON
+              annotationsSection = `\n### Annotations\n\`\`\`json\n${feedbackAnnotations}\n\`\`\``;
             }
           }
 
           // Create issue body
-          const issueBody = `## Feedback Details
+          const githubMention = githubUsername
+            ? `\n\n@${githubUsername} - You'll be notified of updates to this issue.`
+            : "";
+
+          // Check if screenshot is a base64 data URL (too large for GitHub)
+          const isDataUrl = feedbackScreenshot.startsWith("data:image/");
+          const screenshotSection = isDataUrl
+            ? `### Screenshot\n\n⚠️ Screenshot is too large to embed directly. Please view it in the Bug Buddy dashboard.\n\n[Screenshot URL](${feedbackScreenshot.substring(0, 200)}...)`
+            : `### Screenshot\n\n![Screenshot](${feedbackScreenshot})`;
+
+          let issueBody = `## Feedback Details
 
 ${feedbackDescription}
 
@@ -162,15 +286,21 @@ ${feedbackUserName ? `**Reported by:** ${feedbackUserName}` : ""}
 ${feedbackUrl ? `**URL:** ${feedbackUrl}` : ""}
 ${userAgentInfo ? `\n### Environment\n${userAgentInfo}` : ""}${deviceInfoSection}
 
-### Screenshot
-![Screenshot](${feedbackScreenshot})
-
-${feedbackAnnotations ? `\n### Annotations\n\`\`\`json\n${feedbackAnnotations}\n\`\`\`` : ""}
+${screenshotSection}${annotationsSection}${githubMention}
 
 ---
 
 _Created by [Bug Buddy](https://bugbuddy.dev)_
 `;
+
+          // GitHub has a 65,536 character limit for issue body
+          // If body is too long, truncate it and add a note
+          const maxBodyLength = 60000; // Leave some buffer
+          if (issueBody.length > maxBodyLength) {
+            const truncatedBody = issueBody.substring(0, maxBodyLength);
+            const truncatedNote = `\n\n---\n\n⚠️ _Issue body was truncated due to length. Full details available in Bug Buddy dashboard._`;
+            issueBody = truncatedBody + truncatedNote;
+          }
 
           const githubIssue = await createGitHubIssue(
             projectId,
@@ -202,7 +332,7 @@ _Created by [Bug Buddy](https://bugbuddy.dev)_
           console.error("Error creating GitHub issue:", error);
           // Don't fail the feedback submission if GitHub issue creation fails
         }
-      });
+      })();
     }
 
     getPostHogClient().capture({

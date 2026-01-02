@@ -86,7 +86,7 @@ export function AdminProjectsTable() {
             <TableRow>
               <TableHead>Project</TableHead>
               <TableHead>Owner</TableHead>
-              <TableHead>API Key</TableHead>
+              <TableHead>Client Key</TableHead>
               <TableHead>Feedback</TableHead>
               <TableHead>Created</TableHead>
             </TableRow>

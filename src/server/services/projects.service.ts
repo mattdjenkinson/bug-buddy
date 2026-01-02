@@ -3,7 +3,13 @@ import { prisma } from "@/lib/prisma";
 export async function getUserProjects(userId: string) {
   return prisma.project.findMany({
     where: { userId },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      apiKey: true,
+      secretKey: true,
+      createdAt: true,
       _count: {
         select: {
           feedback: true,
@@ -50,6 +56,7 @@ export async function getProjectByApiKey(apiKey: string) {
     where: { apiKey },
     include: {
       widgetCustomization: true,
+      githubIntegration: true,
     },
   });
 }
