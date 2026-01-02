@@ -4,7 +4,8 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
-    REDIS_URL: z.string().default("redis://localhost:6379"),
+    KV_REST_API_URL: z.url(),
+    KV_REST_API_TOKEN: z.string().min(1),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),

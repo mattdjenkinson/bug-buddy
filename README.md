@@ -28,7 +28,9 @@ A feedback widget system that captures screenshots, allows annotations, and auto
    ```env
    # Database
    DATABASE_URL="postgresql://bugbuddy:bugbuddy@localhost:5432/bugbuddy?schema=public"
-   REDIS_URL="redis://localhost:6379"
+   KV_REST_API_URL="" (upstash redis url)
+   KV_REST_API_TOKEN="" (upstash redis token)
+
 
    # Better Auth
    BETTER_AUTH_SECRET="your-secret-key-here-change-in-production"
