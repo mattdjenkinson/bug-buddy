@@ -99,7 +99,7 @@ const redisClient: RatelimitRedis = {
 export const projectRatelimit = new Ratelimit({
   redis: redisClient,
   limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute per project
-  analytics: true,
+  analytics: false,
   prefix: "ratelimit:project",
 });
 
@@ -107,7 +107,7 @@ export const projectRatelimit = new Ratelimit({
 export const ipRatelimit = new Ratelimit({
   redis: redisClient,
   limiter: Ratelimit.slidingWindow(5, "1 m"), // 5 requests per minute per IP
-  analytics: true,
+  analytics: false,
   prefix: "ratelimit:ip",
 });
 
@@ -115,7 +115,7 @@ export const ipRatelimit = new Ratelimit({
 export const combinedRatelimit = new Ratelimit({
   redis: redisClient,
   limiter: Ratelimit.slidingWindow(3, "1 m"), // 3 requests per minute per IP+Project combo
-  analytics: true,
+  analytics: false,
   prefix: "ratelimit:combined",
 });
 

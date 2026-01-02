@@ -119,8 +119,10 @@ export async function submitWidgetFeedback(data: {
     }
 
     // Validate domain first (if configured)
+    // Pass the url parameter to validate against the actual page where widget is embedded
     const domainValidation = await validateDomainForAction(
       validated.projectKey,
+      validated.url,
     );
     if (!domainValidation.isValid) {
       return {

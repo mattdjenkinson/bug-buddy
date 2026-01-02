@@ -55,9 +55,12 @@ export async function validateSecretKeyForAction(
 
 /**
  * Validates domain for server actions (returns simple boolean result)
+ * @param projectKey - The project API key
+ * @param url - Optional URL of the page where the widget is embedded (takes precedence over Origin/Referer)
  */
 export async function validateDomainForAction(
   projectKey: string,
+  url?: string,
 ): Promise<{ isValid: boolean; error?: string }> {
   const { headers } = await import("next/headers");
   const headersList = await headers();
@@ -83,30 +86,32 @@ export async function validateDomainForAction(
     return { isValid: true };
   }
 
-  // Try to get the requesting domain from origin or referer
+  // Helper function to extract hostname from a URL string
+  const extractHostname = (urlString: string): string | null => {
+    try {
+      const urlObj = new URL(urlString);
+      const isLocalhost =
+        urlObj.hostname === "localhost" || urlObj.hostname === "127.0.0.1";
+      return isLocalhost ? urlObj.host : urlObj.hostname;
+    } catch {
+      return null;
+    }
+  };
+
+  // Try to get the requesting domain from url parameter first (most reliable)
+  // then fall back to origin or referer
   let requestHost: string | null = null;
 
-  if (origin) {
-    try {
-      const originUrl = new URL(origin);
-      // For localhost, preserve the port; for others, use hostname only
-      const isLocalhost =
-        originUrl.hostname === "localhost" ||
-        originUrl.hostname === "127.0.0.1";
-      requestHost = isLocalhost ? originUrl.host : originUrl.hostname;
-    } catch {
-      // Invalid origin URL, ignore
-    }
-  } else if (referer) {
-    try {
-      const refererUrl = new URL(referer);
-      const isLocalhost =
-        refererUrl.hostname === "localhost" ||
-        refererUrl.hostname === "127.0.0.1";
-      requestHost = isLocalhost ? refererUrl.host : refererUrl.hostname;
-    } catch {
-      // Invalid referer URL, ignore
-    }
+  if (url) {
+    requestHost = extractHostname(url);
+  }
+
+  if (!requestHost && origin) {
+    requestHost = extractHostname(origin);
+  }
+
+  if (!requestHost && referer) {
+    requestHost = extractHostname(referer);
   }
 
   // Always allow localhost for development
@@ -124,19 +129,38 @@ export async function validateDomainForAction(
   if (!requestHost) {
     return {
       isValid: false,
-      error: "Origin or Referer header required",
+      error: "Origin, Referer header, or url parameter required",
     };
   }
 
-  // Check if origin/referer matches any allowed domain
-  const isAllowed = allowedDomains.some((domain: string) => {
-    // Remove protocol if present
-    const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    // Support exact match or subdomain match
-    return (
-      requestHost === cleanDomain || requestHost.endsWith(`.${cleanDomain}`)
-    );
-  });
+  // Helper function to check if a domain matches an allowed domain
+  // Supports exact match and subdomain matching (e.g., www.example.com matches example.com)
+  const isDomainAllowed = (host: string, allowedDomain: string): boolean => {
+    // Remove protocol and trailing slash if present
+    const cleanDomain = allowedDomain
+      .replace(/^https?:\/\//, "")
+      .replace(/\/$/, "")
+      .toLowerCase();
+    const cleanHost = host.toLowerCase();
+
+    // Exact match
+    if (cleanHost === cleanDomain) {
+      return true;
+    }
+
+    // Subdomain match: www.example.com should match example.com
+    // But example.com should NOT match www.example.com
+    if (cleanHost.endsWith(`.${cleanDomain}`)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Check if the domain matches any allowed domain
+  const isAllowed = allowedDomains.some((domain: string) =>
+    isDomainAllowed(requestHost!, domain),
+  );
 
   if (!isAllowed) {
     return { isValid: false, error: "Domain not allowed" };
