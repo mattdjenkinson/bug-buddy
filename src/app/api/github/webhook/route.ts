@@ -1,6 +1,6 @@
 import { syncIssueFromGitHub } from "@/lib/github";
 import { prisma } from "@/lib/prisma";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -57,17 +57,7 @@ export async function POST(request: NextRequest) {
 
       // Use timing-safe comparison to prevent timing attacks
       if (signature.length !== expectedSignature.length) {
-        console.error("GitHub Webhook: Invalid signature 1");
-        return NextResponse.json(
-          { message: "Invalid signature" },
-          { status: 401 },
-        );
-      }
-
-      const signatureBuffer = Buffer.from(signature);
-      const expectedBuffer = Buffer.from(expectedSignature);
-      if (!timingSafeEqual(signatureBuffer, expectedBuffer)) {
-        console.error("GitHub Webhook: Invalid signature 2");
+        console.error("GitHub Webhook: Invalid signature");
         return NextResponse.json(
           { message: "Invalid signature" },
           { status: 401 },
