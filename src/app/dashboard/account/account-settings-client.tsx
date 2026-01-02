@@ -30,6 +30,7 @@ import { authClient } from "@/lib/auth/client";
 import { getAccounts } from "@/server/actions/account/get-accounts";
 import { unlinkAccount } from "@/server/actions/account/unlink-account";
 import { initiateGitHubConnection } from "@/server/actions/github/connect-github";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Github, LogOut, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import posthog from "posthog-js";
@@ -39,136 +40,133 @@ import { toast } from "sonner";
 export function AccountSettingsClient() {
   const { user } = useSession();
   const router = useRouter();
-  const [accounts, setAccounts] = React.useState<
-    Array<{
-      id: string;
-      providerId: string;
-      accountId: string;
-      createdAt: Date;
-    }>
-  >([]);
-  const [sessions, setSessions] = React.useState<
-    Array<{
-      id: string;
-      token: string;
-      expiresAt: Date | string;
-      ipAddress: string | null;
-      userAgent: string | null;
-      createdAt: Date | string;
-      isActive?: boolean;
-    }>
-  >([]);
-  const [loading, setLoading] = React.useState(true);
-  const [unlinking, setUnlinking] = React.useState<string | null>(null);
-  const [revoking, setRevoking] = React.useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [deleting, setDeleting] = React.useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const { data: currentSession } = authClient.useSession();
 
-  // Load accounts and sessions
-  const loadData = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const [accountsResult, sessionsResponse] = await Promise.all([
-        getAccounts(),
-        authClient.listSessions(),
-      ]);
+  // Fetch accounts and sessions using React Query
+  const {
+    data: accountsData,
+    isLoading: isLoadingAccounts,
+    error: accountsError,
+  } = useQuery({
+    queryKey: ["account-settings", "accounts"],
+    queryFn: async () => {
+      const result = await getAccounts();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to load accounts");
+      }
+      return result.accounts;
+    },
+  });
 
-      if (accountsResult.success) {
-        setAccounts(accountsResult.accounts);
+  const {
+    data: sessionsData,
+    isLoading: isLoadingSessions,
+    error: sessionsError,
+  } = useQuery({
+    queryKey: ["account-settings", "sessions", currentSession?.session?.id],
+    queryFn: async () => {
+      const sessionsResponse = await authClient.listSessions();
+      if (!sessionsResponse.data || !Array.isArray(sessionsResponse.data)) {
+        return [];
       }
 
-      if (sessionsResponse.data && Array.isArray(sessionsResponse.data)) {
-        // Get current session to identify active session
-        // Try to match by session ID first, then by token
-        const currentSessionId = currentSession?.session?.id || null;
-        const currentSessionToken = currentSession?.session?.token || null;
+      // Get current session to identify active session
+      const currentSessionId = currentSession?.session?.id || null;
+      const currentSessionToken = currentSession?.session?.token || null;
 
-        const sessionsWithActiveFlag = sessionsResponse.data.map(
-          (s: {
-            id: string;
-            token: string;
-            expiresAt: Date | string;
-            ipAddress?: string | null;
-            userAgent?: string | null;
-            createdAt: Date | string;
-          }) => ({
-            id: s.id,
-            token: s.token,
-            expiresAt: s.expiresAt,
-            ipAddress: s.ipAddress || null,
-            userAgent: s.userAgent || null,
-            createdAt: s.createdAt,
-            isActive: Boolean(
-              (currentSessionId && s.id === currentSessionId) ||
-              (currentSessionToken && s.token === currentSessionToken),
-            ),
-          }),
-        );
+      return sessionsResponse.data.map(
+        (s: {
+          id: string;
+          token: string;
+          expiresAt: Date | string;
+          ipAddress?: string | null;
+          userAgent?: string | null;
+          createdAt: Date | string;
+        }) => ({
+          id: s.id,
+          token: s.token,
+          expiresAt: s.expiresAt,
+          ipAddress: s.ipAddress || null,
+          userAgent: s.userAgent || null,
+          createdAt: s.createdAt,
+          isActive: Boolean(
+            (currentSessionId && s.id === currentSessionId) ||
+            (currentSessionToken && s.token === currentSessionToken),
+          ),
+        }),
+      );
+    },
+  });
 
-        setSessions(sessionsWithActiveFlag);
-      }
-    } catch (error) {
-      console.error("Error loading account data:", error);
-      toast.error("Failed to load account data");
-    } finally {
-      setLoading(false);
-    }
-  }, [currentSession]);
+  const accounts = accountsData || [];
+  const sessions = sessionsData || [];
+  const loading = isLoadingAccounts || isLoadingSessions;
 
-  // Load data on mount
+  // Handle errors
   React.useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (accountsError) {
+      console.error("Error loading accounts:", accountsError);
+      toast.error("Failed to load accounts");
+    }
+    if (sessionsError) {
+      console.error("Error loading sessions:", sessionsError);
+      toast.error("Failed to load sessions");
+    }
+  }, [accountsError, sessionsError]);
 
   // Handle GitHub connection success/error from query params
-  useGitHubConnectionStatus(loadData);
+  useGitHubConnectionStatus(() => {
+    queryClient.invalidateQueries({ queryKey: ["account-settings"] });
+  });
 
-  const handleUnlinkAccount = async (accountId: string) => {
-    setUnlinking(accountId);
-    try {
+  const unlinkAccountMutation = useMutation({
+    mutationFn: async (accountId: string) => {
       const result = await unlinkAccount({ accountId });
-
       if (!result.success) {
         throw new Error(result.error || "Failed to unlink account");
       }
-
+    },
+    onSuccess: () => {
       toast.success("Account unlinked successfully");
-      // Remove from local state
-      setAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
-      router.refresh();
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ["account-settings"] });
+    },
+    onError: (error) => {
       console.error("Error unlinking account:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to unlink account",
       );
-    } finally {
-      setUnlinking(null);
-    }
+    },
+  });
+
+  const handleUnlinkAccount = (accountId: string) => {
+    unlinkAccountMutation.mutate(accountId);
   };
 
-  const handleRevokeSession = async (token: string) => {
-    setRevoking(token);
-    try {
+  const revokeSessionMutation = useMutation({
+    mutationFn: async (token: string) => {
       await authClient.revokeSession({ token });
-
+      return token;
+    },
+    onSuccess: () => {
       toast.success("Session revoked successfully");
-
-      // Track session revocation
       posthog.capture("session_revoked");
-
-      // Remove from local state
-      setSessions((prev) => prev.filter((s) => s.token !== token));
-
-      router.refresh();
-    } catch (error) {
+      queryClient.invalidateQueries({
+        queryKey: ["account-settings", "sessions"],
+      });
+    },
+    onError: (error) => {
       console.error("Error revoking session:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to revoke session",
       );
-    } finally {
-      setRevoking(null);
-    }
+    },
+  });
+
+  const handleRevokeSession = (token: string) => {
+    revokeSessionMutation.mutate(token);
   };
 
   const handleDeleteAccount = async () => {
@@ -315,12 +313,13 @@ export function AccountSettingsClient() {
                         size="sm"
                         onClick={() => handleUnlinkAccount(account.id)}
                         disabled={
-                          unlinking === account.id ||
-                          (accounts.length === 1 && unlinking !== account.id)
+                          unlinkAccountMutation.isPending ||
+                          (accounts.length === 1 &&
+                            !unlinkAccountMutation.isPending)
                         }
-                        loading={unlinking === account.id}
+                        loading={unlinkAccountMutation.isPending}
                       >
-                        {unlinking === account.id ? (
+                        {unlinkAccountMutation.isPending ? (
                           <RefreshCw className="h-4 w-4" />
                         ) : (
                           <X className="h-4 w-4" />
@@ -443,8 +442,10 @@ export function AccountSettingsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleRevokeSession(session.token)}
-                      disabled={revoking === session.token || session.isActive}
-                      loading={revoking === session.token}
+                      disabled={
+                        revokeSessionMutation.isPending || session.isActive
+                      }
+                      loading={revokeSessionMutation.isPending}
                     >
                       {!session.isActive && <LogOut className="h-4 w-4" />}
                       {session.isActive ? "Current" : "Revoke"}
