@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature - if secret is configured, signature is required
     if (integration.webhookSecret) {
       if (!signature) {
+        console.error("GitHub Webhook: Signature is missing");
         return NextResponse.json(
           { message: "Missing signature" },
           { status: 401 },
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
 
       // Use timing-safe comparison to prevent timing attacks
       if (signature.length !== expectedSignature.length) {
+        console.error("GitHub Webhook: Invalid signature 1");
         return NextResponse.json(
           { message: "Invalid signature" },
           { status: 401 },
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
       const signatureBuffer = Buffer.from(signature);
       const expectedBuffer = Buffer.from(expectedSignature);
       if (!timingSafeEqual(signatureBuffer, expectedBuffer)) {
+        console.error("GitHub Webhook: Invalid signature 2");
         return NextResponse.json(
           { message: "Invalid signature" },
           { status: 401 },
