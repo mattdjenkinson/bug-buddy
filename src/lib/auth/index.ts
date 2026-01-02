@@ -5,27 +5,12 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, lastLoginMethod } from "better-auth/plugins";
 import { start } from "workflow/api";
-import { redis } from "../redis";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  secondaryStorage: {
-    get: async (key: string) => {
-      return redis.get(key);
-    },
-    set: async (key: string, value: string) => {
-      return redis.set(key, value);
-    },
-    delete: async (key: string) => {
-      await redis.del(key);
-      return null;
-    },
-    clear: async () => {
-      return redis.flushall();
-    },
-  },
+
   plugins: [lastLoginMethod(), admin()],
   emailAndPassword: {
     enabled: false,

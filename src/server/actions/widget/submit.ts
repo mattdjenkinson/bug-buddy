@@ -175,7 +175,7 @@ export async function submitWidgetFeedback(data: {
       },
     });
 
-    // Trigger GitHub issue creation after response is sent
+    // Create GitHub issue synchronously - wait for it to complete
     if (project.githubIntegration) {
       // Capture values before the callback to avoid TypeScript null check issues
       const githubIntegration = project.githubIntegration;
@@ -199,88 +199,84 @@ export async function submitWidgetFeedback(data: {
       const feedbackId = feedback.id;
       const githubUsername = validated.githubUsername;
 
-      // Defer GitHub issue creation - don't await, let it run in background
-      void (async () => {
-        try {
-          // Parse user agent to get browser and OS info
-          const userAgentInfo = parseUserAgent(feedbackUserAgent);
+      try {
+        // Parse user agent to get browser and OS info
+        const userAgentInfo = parseUserAgent(feedbackUserAgent);
 
-          // Format device info for GitHub issue as a markdown table
-          let deviceInfoSection = "";
-          if (feedbackDeviceInfo) {
-            const rows: string[] = [];
-            if (feedbackDeviceInfo.deviceType) {
-              rows.push(`| Device Type | ${feedbackDeviceInfo.deviceType} |`);
-            }
-            if (feedbackDeviceInfo.browser) {
-              rows.push(`| Browser | ${feedbackDeviceInfo.browser} |`);
-            }
-            if (feedbackDeviceInfo.os) {
-              rows.push(`| OS | ${feedbackDeviceInfo.os} |`);
-            }
-            if (feedbackDeviceInfo.screenSize) {
-              rows.push(
-                `| Screen Size | ${feedbackDeviceInfo.screenSize.width} x ${feedbackDeviceInfo.screenSize.height} |`,
-              );
-            }
-            if (feedbackDeviceInfo.viewportSize) {
-              rows.push(
-                `| Viewport Size | ${feedbackDeviceInfo.viewportSize.width} x ${feedbackDeviceInfo.viewportSize.height} |`,
-              );
-            }
-            if (feedbackDeviceInfo.zoomLevel !== undefined) {
-              rows.push(`| Zoom Level | ${feedbackDeviceInfo.zoomLevel}% |`);
-            }
-            if (feedbackDeviceInfo.pixelRatio !== undefined) {
-              rows.push(`| Pixel Ratio | ${feedbackDeviceInfo.pixelRatio}x |`);
-            }
-            if (rows.length > 0) {
-              deviceInfoSection = `\n### Device Information\n\n| Property | Value |\n|----------|-------|\n${rows.join("\n")}`;
-            }
+        // Format device info for GitHub issue as a markdown table
+        let deviceInfoSection = "";
+        if (feedbackDeviceInfo) {
+          const rows: string[] = [];
+          if (feedbackDeviceInfo.deviceType) {
+            rows.push(`| Device Type | ${feedbackDeviceInfo.deviceType} |`);
           }
-
-          // Parse and format annotations
-          let annotationsSection = "";
-          if (feedbackAnnotations) {
-            try {
-              const parsedAnnotations = JSON.parse(feedbackAnnotations);
-              if (
-                Array.isArray(parsedAnnotations) &&
-                parsedAnnotations.length > 0
-              ) {
-                const annotationItems = parsedAnnotations
-                  .map(
-                    (ann: {
-                      number: number;
-                      text: string;
-                      x: number;
-                      y: number;
-                    }) =>
-                      ann.text
-                        ? `${ann.number}. ${ann.text}`
-                        : `${ann.number}.`,
-                  )
-                  .join("\n");
-                annotationsSection = `\n### Annotations\n\n${annotationItems}`;
-              }
-            } catch {
-              // If parsing fails, fall back to showing raw JSON
-              annotationsSection = `\n### Annotations\n\`\`\`json\n${feedbackAnnotations}\n\`\`\``;
-            }
+          if (feedbackDeviceInfo.browser) {
+            rows.push(`| Browser | ${feedbackDeviceInfo.browser} |`);
           }
+          if (feedbackDeviceInfo.os) {
+            rows.push(`| OS | ${feedbackDeviceInfo.os} |`);
+          }
+          if (feedbackDeviceInfo.screenSize) {
+            rows.push(
+              `| Screen Size | ${feedbackDeviceInfo.screenSize.width} x ${feedbackDeviceInfo.screenSize.height} |`,
+            );
+          }
+          if (feedbackDeviceInfo.viewportSize) {
+            rows.push(
+              `| Viewport Size | ${feedbackDeviceInfo.viewportSize.width} x ${feedbackDeviceInfo.viewportSize.height} |`,
+            );
+          }
+          if (feedbackDeviceInfo.zoomLevel !== undefined) {
+            rows.push(`| Zoom Level | ${feedbackDeviceInfo.zoomLevel}% |`);
+          }
+          if (feedbackDeviceInfo.pixelRatio !== undefined) {
+            rows.push(`| Pixel Ratio | ${feedbackDeviceInfo.pixelRatio}x |`);
+          }
+          if (rows.length > 0) {
+            deviceInfoSection = `\n### Device Information\n\n| Property | Value |\n|----------|-------|\n${rows.join("\n")}`;
+          }
+        }
 
-          // Create issue body
-          const githubMention = githubUsername
-            ? `\n\n@${githubUsername} - You'll be notified of updates to this issue.`
-            : "";
+        // Parse and format annotations
+        let annotationsSection = "";
+        if (feedbackAnnotations) {
+          try {
+            const parsedAnnotations = JSON.parse(feedbackAnnotations);
+            if (
+              Array.isArray(parsedAnnotations) &&
+              parsedAnnotations.length > 0
+            ) {
+              const annotationItems = parsedAnnotations
+                .map(
+                  (ann: {
+                    number: number;
+                    text: string;
+                    x: number;
+                    y: number;
+                  }) =>
+                    ann.text ? `${ann.number}. ${ann.text}` : `${ann.number}.`,
+                )
+                .join("\n");
+              annotationsSection = `\n### Annotations\n\n${annotationItems}`;
+            }
+          } catch {
+            // If parsing fails, fall back to showing raw JSON
+            annotationsSection = `\n### Annotations\n\`\`\`json\n${feedbackAnnotations}\n\`\`\``;
+          }
+        }
 
-          // Check if screenshot is a base64 data URL (too large for GitHub)
-          const isDataUrl = feedbackScreenshot.startsWith("data:image/");
-          const screenshotSection = isDataUrl
-            ? `### Screenshot\n\n⚠️ Screenshot is too large to embed directly. Please view it in the Bug Buddy dashboard.\n\n[Screenshot URL](${feedbackScreenshot.substring(0, 200)}...)`
-            : `### Screenshot\n\n![Screenshot](${feedbackScreenshot})`;
+        // Create issue body
+        const githubMention = githubUsername
+          ? `\n\n@${githubUsername} - You'll be notified of updates to this issue.`
+          : "";
 
-          let issueBody = `## Feedback Details
+        // Check if screenshot is a base64 data URL (too large for GitHub)
+        const isDataUrl = feedbackScreenshot.startsWith("data:image/");
+        const screenshotSection = isDataUrl
+          ? `### Screenshot\n\n⚠️ Screenshot is too large to embed directly. Please view it in the Bug Buddy dashboard.\n\n[Screenshot URL](${feedbackScreenshot.substring(0, 200)}...)`
+          : `### Screenshot\n\n![Screenshot](${feedbackScreenshot})`;
+
+        let issueBody = `## Feedback Details
 
 ${feedbackDescription}
 
@@ -295,46 +291,48 @@ ${screenshotSection}${annotationsSection}${githubMention}
 _Created by [Bug Buddy](https://bugbuddy.dev)_
 `;
 
-          // GitHub has a 65,536 character limit for issue body
-          // If body is too long, truncate it and add a note
-          const maxBodyLength = 60000; // Leave some buffer
-          if (issueBody.length > maxBodyLength) {
-            const truncatedBody = issueBody.substring(0, maxBodyLength);
-            const truncatedNote = `\n\n---\n\n⚠️ _Issue body was truncated due to length. Full details available in Bug Buddy dashboard._`;
-            issueBody = truncatedBody + truncatedNote;
-          }
-
-          const githubIssue = await createGitHubIssue(
-            projectId,
-            feedbackTitle || "Feedback Submission",
-            issueBody,
-            githubIntegration.defaultLabels,
-            githubIntegration.defaultAssignees,
-          );
-
-          // Create issue record in database
-          await prisma.issue.create({
-            data: {
-              feedbackId: feedbackId,
-              githubIssueId: githubIssue.number,
-              githubIssueUrl: githubIssue.html_url,
-              title: githubIssue.title,
-              body: githubIssue.body || "",
-              state: githubIssue.state,
-              assignees: githubIssue.assignees?.map((a) => a.login) || [],
-              labels: githubIssue.labels
-                .filter(
-                  (l): l is { name: string } =>
-                    typeof l === "object" && "name" in l,
-                )
-                .map((l) => l.name),
-            },
-          });
-        } catch (error) {
-          console.error("Error creating GitHub issue:", error);
-          // Don't fail the feedback submission if GitHub issue creation fails
+        // GitHub has a 65,536 character limit for issue body
+        // If body is too long, truncate it and add a note
+        const maxBodyLength = 60000; // Leave some buffer
+        if (issueBody.length > maxBodyLength) {
+          const truncatedBody = issueBody.substring(0, maxBodyLength);
+          const truncatedNote = `\n\n---\n\n⚠️ _Issue body was truncated due to length. Full details available in Bug Buddy dashboard._`;
+          issueBody = truncatedBody + truncatedNote;
         }
-      })();
+
+        const githubIssue = await createGitHubIssue(
+          projectId,
+          feedbackTitle || "Feedback Submission",
+          issueBody,
+          githubIntegration.defaultLabels,
+          githubIntegration.defaultAssignees,
+        );
+
+        // Create issue record in database
+        await prisma.issue.create({
+          data: {
+            feedbackId: feedbackId,
+            githubIssueId: githubIssue.number,
+            githubIssueUrl: githubIssue.html_url,
+            title: githubIssue.title,
+            body: githubIssue.body || "",
+            state: githubIssue.state,
+            assignees: githubIssue.assignees?.map((a) => a.login) || [],
+            labels: githubIssue.labels
+              .filter(
+                (l): l is { name: string } =>
+                  typeof l === "object" && "name" in l,
+              )
+              .map((l) => l.name),
+          },
+        });
+      } catch (error) {
+        // If GitHub issue creation fails, delete the feedback and re-throw
+        await prisma.feedback.delete({
+          where: { id: feedbackId },
+        });
+        throw error;
+      }
     }
 
     getPostHogClient().capture({
