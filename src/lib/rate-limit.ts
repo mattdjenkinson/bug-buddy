@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { redis } from "./redis";
 
 // Interface that matches what @upstash/ratelimit expects
-// The standard redis client implements these methods at runtime
 interface RatelimitRedis {
   evalsha: <TArgs extends unknown[] = unknown[], TData = unknown>(
     sha1: string,
@@ -25,9 +24,72 @@ interface RatelimitRedis {
   [key: string]: unknown;
 }
 
-// Type assertion: The standard redis client has evalsha method at runtime
-// @upstash/ratelimit expects a Redis interface, but the standard redis package works fine
-const redisClient = redis as unknown as RatelimitRedis;
+// Adapter wrapper to convert standard redis client to @upstash/ratelimit compatible interface
+// The standard redis package uses different method names and signatures than @upstash/redis
+const redisClient: RatelimitRedis = {
+  evalsha: async <TArgs extends unknown[] = unknown[], TData = unknown>(
+    sha1: string,
+    keys: string[],
+    args: TArgs,
+  ): Promise<TData> => {
+    // Redis v5 uses evalSha (camelCase) method
+    // Type assertion needed because the Redis client types don't expose evalSha in the type definition
+    // but it exists at runtime
+    type RedisWithEvalSha = typeof redis & {
+      evalSha: (
+        sha1: string,
+        options: { keys: string[]; arguments: unknown[] },
+      ) => Promise<TData>;
+    };
+    const redisWithEvalSha = redis as RedisWithEvalSha;
+    if (typeof redisWithEvalSha.evalSha === "function") {
+      return redisWithEvalSha.evalSha(sha1, {
+        keys,
+        arguments: args,
+      });
+    }
+    // Fallback: use eval if evalSha is not available
+    // This is less efficient but will work
+    throw new Error("evalSha method not available on Redis client");
+  },
+  eval: async <TArgs extends unknown[] = unknown[], TData = unknown>(
+    script: string,
+    keys: string[],
+    args: TArgs,
+  ): Promise<TData> => {
+    return redis.eval(script, {
+      keys,
+      arguments: args as string[],
+    }) as Promise<TData>;
+  },
+  script: async (command: "LOAD", script: string): Promise<string> => {
+    if (command === "LOAD") {
+      return redis.scriptLoad(script);
+    }
+    throw new Error(`Unsupported script command: ${command}`);
+  },
+  get: async <TData = string>(key: string): Promise<TData | null> => {
+    return redis.get(key) as Promise<TData | null>;
+  },
+  set: async <TData = string>(
+    key: string,
+    value: TData,
+    opts?: { ex?: number; px?: number },
+  ): Promise<"OK" | TData | null> => {
+    const valueStr = String(value);
+    if (opts?.ex) {
+      return redis.setEx(key, opts.ex, valueStr) as Promise<
+        "OK" | TData | null
+      >;
+    }
+    if (opts?.px) {
+      return redis.pSetEx(key, opts.px, valueStr) as Promise<
+        "OK" | TData | null
+      >;
+    }
+    return redis.set(key, valueStr) as Promise<"OK" | TData | null>;
+  },
+};
 
 // Rate limiter for per-project submissions (more lenient)
 export const projectRatelimit = new Ratelimit({
