@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useChartColors } from "@/lib/chart-colors";
 import * as React from "react";
 import {
   Bar,
@@ -40,9 +41,10 @@ interface AnalyticsDashboardProps {
   }>;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
 export function AnalyticsDashboard({ feedback }: AnalyticsDashboardProps) {
+  const chartColors = useChartColors();
+  const primaryColor = chartColors[0] || "#9d4edd";
+
   // Calculate metrics
   const totalFeedback = feedback.length;
   const openFeedback = feedback.filter((f) => f.status === "open").length;
@@ -156,15 +158,28 @@ export function AnalyticsDashboard({ feedback }: AnalyticsDashboardProps) {
             <CardTitle>Feedback Over Time</CardTitle>
             <CardDescription>Last 30 days</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={feedbackByDate}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  itemStyle={{
+                    color: "white",
+                  }}
+                  contentStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                    border: "none",
+                  }}
+                  labelStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                  }}
+                />
                 <Legend />
-                <Line type="monotone" dataKey="count" stroke="#8884d8" />
+                <Line type="monotone" dataKey="count" stroke={primaryColor} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -174,7 +189,7 @@ export function AnalyticsDashboard({ feedback }: AnalyticsDashboardProps) {
           <CardHeader>
             <CardTitle>Status Distribution</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -182,21 +197,34 @@ export function AnalyticsDashboard({ feedback }: AnalyticsDashboardProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
+                  label={({ name, percent, value }) =>
+                    value > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ""
                   }
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill={primaryColor}
                   dataKey="value"
                 >
                   {statusData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={chartColors[index % chartColors.length]}
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  itemStyle={{
+                    color: "white",
+                  }}
+                  contentStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                    border: "none",
+                  }}
+                  labelStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -206,15 +234,28 @@ export function AnalyticsDashboard({ feedback }: AnalyticsDashboardProps) {
           <CardHeader>
             <CardTitle>Feedback by Project</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={feedbackByProject}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  itemStyle={{
+                    color: "white",
+                  }}
+                  contentStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                    border: "none",
+                  }}
+                  labelStyle={{
+                    color: "white",
+                    backgroundColor: "transparent",
+                  }}
+                />
                 <Legend />
-                <Bar dataKey="count" fill="#8884d8" />
+                <Bar dataKey="count" fill={primaryColor} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -413,7 +413,7 @@ export function AccountSettingsClient() {
               <div className="space-y-4">
                 {sessions.map((session) => (
                   <div
-                    key={session.id}
+                    key={session.token}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
                     <div className="flex-1">
