@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, "..");
-const widgetPath = join(rootDir, "public", "widget.js");
+const widgetPath = join(rootDir, "src", "widget", "widget.js");
 const manifestPath = join(rootDir, "public", "widget-manifest.json");
 
 // Create a manifest file pointing to widget.js (for development)

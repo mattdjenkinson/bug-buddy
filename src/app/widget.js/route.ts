@@ -40,9 +40,11 @@ export async function GET() {
     }
 
     // Read the widget file
+    // Check public first (for minified production builds), then src/widget (for dev source)
     const widgetPaths = [
-      join(process.cwd(), "public", widgetFilename),
-      join(process.cwd(), widgetFilename),
+      join(process.cwd(), "public", widgetFilename), // Minified production file
+      join(process.cwd(), "src", "widget", "widget.js"), // Source file for development
+      join(process.cwd(), widgetFilename), // Fallback
     ];
 
     let widgetPath: string | null = null;

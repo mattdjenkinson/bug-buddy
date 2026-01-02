@@ -12,7 +12,7 @@ export function HexagonIconNegative(props: HexagonIconProps) {
     >
       <polygon
         points="256,16 464,144 464,368 256,496 48,368 48,144"
-        fill="currentColor"
+        fill="var(--color-primary)"
       />
     </svg>
   );

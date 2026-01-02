@@ -50,7 +50,6 @@ export default function WidgetEmbedPageContent() {
   // Listen for screenshot data from parent window via postMessage
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Accept messages from any origin for now (you can add origin check if needed)
       if (event.data && event.data.type === "bug-buddy-screenshot") {
         if (event.data.screenshot) {
           setScreenshot(event.data.screenshot);
@@ -291,12 +290,12 @@ export default function WidgetEmbedPageContent() {
                   <div className="order-2 md:order-1">
                     <Field>
                       <FieldLabel>Screenshot</FieldLabel>
-                      <div className="border rounded-lg p-4 bg-gray-50 sticky top-4">
+                      <div className="border rounded-lg p-2 bg-background sticky top-4">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={screenshot}
                           alt="Screenshot"
-                          className="max-w-full h-auto rounded"
+                          className="max-w-full h-auto rounded-sm"
                         />
                       </div>
                     </Field>
