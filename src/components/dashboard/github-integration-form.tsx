@@ -31,6 +31,7 @@ import { saveGitHubIntegration } from "@/server/actions/github/integration";
 import { getUserRepositories } from "@/server/actions/github/repositories";
 import { verifyWebhook } from "@/server/actions/github/verify-webhook";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Check,
@@ -65,33 +66,13 @@ export function GitHubIntegrationForm({
   onDirtyChange,
 }: GitHubIntegrationFormProps) {
   const [saving, setSaving] = React.useState(false);
-  const [loadingRepos, setLoadingRepos] = React.useState(false);
-  const [repositories, setRepositories] = React.useState<
-    Array<{
-      id: number;
-      name: string;
-      fullName: string;
-      owner: string;
-      private: boolean;
-    }>
-  >([]);
-  const [repoError, setRepoError] = React.useState<string | null>(null);
   const [copiedWebhookUrl, setCopiedWebhookUrl] = React.useState(false);
   const [webhookSecret, setWebhookSecret] = React.useState<string | null>(
     initialData?.webhookSecret || null,
   );
   const [copiedWebhookSecret, setCopiedWebhookSecret] = React.useState(false);
   const [generatingSecret, setGeneratingSecret] = React.useState(false);
-  const [webhookStatus, setWebhookStatus] = React.useState<{
-    configured: boolean;
-    checking: boolean;
-    error?: string;
-    details?: {
-      url: string;
-      events: string[];
-      active: boolean;
-    };
-  } | null>(null);
+  const queryClient = useQueryClient();
 
   const initialRepository = initialData
     ? `${initialData.repositoryOwner}/${initialData.repositoryName}`
@@ -108,27 +89,27 @@ export function GitHubIntegrationForm({
     },
   });
 
-  // Fetch repositories on mount
-  React.useEffect(() => {
-    async function fetchRepos() {
-      setLoadingRepos(true);
-      setRepoError(null);
-      try {
-        const result = await getUserRepositories();
-        if (result.success) {
-          setRepositories(result.repositories);
-        } else {
-          setRepoError(result.error || "Failed to fetch repositories");
-        }
-      } catch {
-        setRepoError("Failed to fetch repositories");
-      } finally {
-        setLoadingRepos(false);
+  // Fetch repositories using React Query
+  const {
+    data: repositoriesData,
+    isLoading: loadingRepos,
+    error: repoErrorResponse,
+  } = useQuery({
+    queryKey: ["github-repositories"],
+    queryFn: async () => {
+      const result = await getUserRepositories();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to fetch repositories");
       }
-    }
+      return result.repositories;
+    },
+    retry: false,
+  });
 
-    fetchRepos();
-  }, []);
+  const repositories = repositoriesData || [];
+  const repoError = repoErrorResponse
+    ? (repoErrorResponse as Error).message
+    : null;
 
   React.useEffect(() => {
     const initialRepository = initialData
@@ -160,6 +141,47 @@ export function GitHubIntegrationForm({
     repositoryOwner && repositoryName
       ? `https://github.com/${repositoryOwner}/${repositoryName}/settings/hooks`
       : null;
+
+  // Determine if we should verify webhook (has repository or initial data)
+  const shouldVerifyWebhook =
+    !!selectedRepository ||
+    !!(initialData?.repositoryOwner && initialData?.repositoryName);
+
+  // Use React Query to automatically verify webhook status
+  const {
+    data: webhookStatus,
+    isLoading: isCheckingWebhook,
+    refetch: refetchWebhookStatus,
+  } = useQuery({
+    queryKey: ["webhook-status", projectId, selectedRepository],
+    queryFn: async () => {
+      const result = await verifyWebhook({ projectId });
+      if (!result.success) {
+        throw new Error(result.error || "Failed to verify webhook");
+      }
+
+      const verifiedResult = result as {
+        success: true;
+        configured: boolean;
+        webhookId?: number;
+        error?: string;
+        details?: {
+          url: string;
+          events: string[];
+          active: boolean;
+        };
+      };
+
+      return {
+        configured: verifiedResult.configured || false,
+        error: verifiedResult.error,
+        details: verifiedResult.details,
+      };
+    },
+    enabled: shouldVerifyWebhook,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
   const copyWebhookUrl = () => {
     navigator.clipboard.writeText(webhookUrl);
@@ -207,48 +229,15 @@ export function GitHubIntegrationForm({
   };
 
   const handleVerifyWebhook = async () => {
-    setWebhookStatus({ configured: false, checking: true });
     try {
-      const result = await verifyWebhook({ projectId });
-      if (!result.success) {
-        throw new Error(result.error || "Failed to verify webhook");
-      }
-
-      // Type guard: when success is true, result has configured property
-      const verifiedResult = result as {
-        success: true;
-        configured: boolean;
-        webhookId?: number;
-        error?: string;
-        details?: {
-          url: string;
-          events: string[];
-          active: boolean;
-        };
-      };
-
-      setWebhookStatus({
-        configured: verifiedResult.configured || false,
-        checking: false,
-        error: verifiedResult.error,
-        details: verifiedResult.details,
-      });
-
-      if (verifiedResult.configured) {
+      const { data } = await refetchWebhookStatus();
+      if (data?.configured) {
         toast.success("Webhook is properly configured!");
       } else {
-        toast.warning(
-          verifiedResult.error || "Webhook is not properly configured",
-        );
+        toast.warning(data?.error || "Webhook is not properly configured");
       }
     } catch (error) {
       console.error("Error verifying webhook:", error);
-      setWebhookStatus({
-        configured: false,
-        checking: false,
-        error:
-          error instanceof Error ? error.message : "Failed to verify webhook",
-      });
       toast.error(
         error instanceof Error ? error.message : "Failed to verify webhook",
       );
@@ -292,9 +281,9 @@ export function GitHubIntegrationForm({
           "GitHub integration saved and webhook created successfully!",
         );
         // Automatically verify webhook status after creation
-        setTimeout(() => {
-          handleVerifyWebhook();
-        }, 1000);
+        queryClient.invalidateQueries({
+          queryKey: ["webhook-status", projectId],
+        });
       } else {
         toast.success("GitHub integration saved successfully!");
       }
@@ -562,66 +551,69 @@ export function GitHubIntegrationForm({
                       variant="outline"
                       size="sm"
                       onClick={handleVerifyWebhook}
-                      disabled={webhookStatus?.checking}
-                      loading={webhookStatus?.checking}
+                      disabled={isCheckingWebhook}
+                      loading={isCheckingWebhook}
                     >
                       <RefreshCw className="h-4 w-4" />
                       Verify
                     </Button>
                   </div>
-                  {webhookStatus && (
-                    <div className="mt-2">
-                      {webhookStatus.checking ? (
-                        <p className="text-sm text-muted-foreground">
-                          Checking webhook status...
-                        </p>
-                      ) : webhookStatus.configured ? (
-                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                          <Check className="h-4 w-4" />
-                          <span>Webhook is properly configured</span>
+                  <div className="mt-2">
+                    {isCheckingWebhook ? (
+                      <p className="text-sm text-muted-foreground">
+                        Checking webhook status...
+                      </p>
+                    ) : webhookStatus?.configured ? (
+                      <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 p-3 text-sm text-green-700 dark:text-green-400">
+                        <Check className="h-4 w-4 shrink-0" />
+                        <span className="font-medium">
+                          Webhook is properly configured and active
+                        </span>
+                      </div>
+                    ) : webhookStatus ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-sm text-amber-700 dark:text-amber-400">
+                          <AlertCircle className="h-4 w-4 shrink-0" />
+                          <span className="font-medium">
+                            {webhookStatus.error ||
+                              "Webhook is not properly configured"}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                            <AlertCircle className="h-4 w-4" />
-                            <span>
-                              {webhookStatus.error ||
-                                "Webhook is not properly configured"}
-                            </span>
+                        {webhookStatus.details && (
+                          <div className="ml-6 space-y-1 text-xs text-muted-foreground">
+                            <p>
+                              URL:{" "}
+                              <code className="px-1 py-0.5 bg-muted rounded">
+                                {webhookStatus.details.url}
+                              </code>
+                            </p>
+                            <p>
+                              Events: {webhookStatus.details.events.join(", ")}
+                            </p>
+                            <p>
+                              Active:{" "}
+                              {webhookStatus.details.active ? "Yes" : "No"}
+                            </p>
                           </div>
-                          {webhookStatus.details && (
-                            <div className="ml-6 space-y-1 text-xs text-muted-foreground">
-                              <p>
-                                URL:{" "}
-                                <code className="px-1 py-0.5 bg-muted rounded">
-                                  {webhookStatus.details.url}
-                                </code>
-                              </p>
-                              <p>
-                                Events:{" "}
-                                {webhookStatus.details.events.join(", ")}
-                              </p>
-                              <p>
-                                Active:{" "}
-                                {webhookStatus.details.active ? "Yes" : "No"}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Webhook status will be checked automatically when a
+                        repository is selected.
+                      </p>
+                    )}
+                  </div>
                   <FieldDescription>
-                    Verify that the webhook is properly configured in your
-                    GitHub repository. The webhook will be automatically created
-                    when you save the integration if your token has the required
-                    permissions.
+                    {webhookStatus?.configured
+                      ? "Your webhook is properly configured and will sync issue status changes and comments from GitHub."
+                      : "Verify that the webhook is properly configured in your GitHub repository. The webhook will be automatically created when you save the integration if your token has the required permissions."}
                   </FieldDescription>
                 </Field>
 
                 {webhookStatus &&
                   !webhookStatus.configured &&
-                  !webhookStatus.checking && (
+                  !isCheckingWebhook && (
                     <>
                       <Separator />
                       <div className="space-y-4">
