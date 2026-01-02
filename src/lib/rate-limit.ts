@@ -35,18 +35,20 @@ const redisClient: RatelimitRedis = {
     // Redis v5 uses evalSha (camelCase) method
     // Type assertion needed because the Redis client types don't expose evalSha in the type definition
     // but it exists at runtime
+    // Convert all arguments to strings as Redis requires string or Buffer
+    const stringArgs = args.map((arg) => String(arg));
     type RedisWithEvalSha = typeof redis & {
       evalSha: (
         sha1: string,
-        options: { keys: string[]; arguments: unknown[] },
+        options: { keys: string[]; arguments: string[] },
       ) => Promise<TData>;
     };
     const redisWithEvalSha = redis as RedisWithEvalSha;
     if (typeof redisWithEvalSha.evalSha === "function") {
       return redisWithEvalSha.evalSha(sha1, {
         keys,
-        arguments: args,
-      });
+        arguments: stringArgs,
+      }) as Promise<TData>;
     }
     // Fallback: use eval if evalSha is not available
     // This is less efficient but will work
@@ -57,9 +59,11 @@ const redisClient: RatelimitRedis = {
     keys: string[],
     args: TArgs,
   ): Promise<TData> => {
+    // Convert all arguments to strings as Redis requires string or Buffer
+    const stringArgs = args.map((arg) => String(arg));
     return redis.eval(script, {
       keys,
-      arguments: args as string[],
+      arguments: stringArgs,
     }) as Promise<TData>;
   },
   script: async (command: "LOAD", script: string): Promise<string> => {
