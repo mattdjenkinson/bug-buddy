@@ -293,6 +293,7 @@ export default function WidgetEmbedPageContent({
         projectKey,
         secretKey,
         image: finalScreenshot,
+        url,
       });
 
       if (!uploadResult.success) {

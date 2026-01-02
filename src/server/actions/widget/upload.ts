@@ -12,13 +12,15 @@ export async function uploadWidgetImage(data: {
   projectKey: string;
   secretKey: string;
   image: string;
+  url?: string;
 }) {
   try {
     const validated = widgetUploadSchema.parse(data);
-    const { image, projectKey, secretKey } = validated;
+    const { image, projectKey, secretKey, url } = validated;
 
     // Validate domain first (if configured)
-    const domainValidation = await validateDomainForAction(projectKey);
+    // Pass the url parameter to validate against the actual page where widget is embedded
+    const domainValidation = await validateDomainForAction(projectKey, url);
     if (!domainValidation.isValid) {
       return {
         success: false,

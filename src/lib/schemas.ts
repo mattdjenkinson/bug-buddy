@@ -155,6 +155,7 @@ export const widgetUploadSchema = z.object({
   projectKey: z.string().min(1, "Project key is required"),
   secretKey: z.string().min(1, "Secret key is required"),
   image: z.string().min(1, "Image data is required"),
+  url: z.string().optional(),
 });
 
 // Font Upload Schema
