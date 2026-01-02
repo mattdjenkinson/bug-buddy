@@ -10,7 +10,7 @@
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "dev": "node scripts/create-widget-manifest.js && next dev",
+    "dev": "node scripts/create-widget-manifest.js && next dev ",
     "build": "pnpm db:generate && pnpm db:migrate:deploy && pnpm widget:minify && next build",
     "widget:minify": "node scripts/minify-widget.js",
     "widget:manifest": "node scripts/create-widget-manifest.js",
@@ -58,7 +58,6 @@
     "dotenv": "^17.2.3",
     "fabric": "^5.5.2",
     "html2canvas": "^1.4.1",
-    "ioredis": "^5.8.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "next-themes": "^0.4.6",
@@ -72,6 +71,7 @@
     "react-hook-form": "^7.54.2",
     "react-markdown": "^9.0.1",
     "recharts": "^2.15.4",
+    "redis": "^5.10.0",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.0",

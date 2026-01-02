@@ -2,53 +2,36 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { headers } from "next/headers";
 import { redis } from "./redis";
 
-// Adapter to make ioredis compatible with @upstash/ratelimit
-const redisAdapter = {
-  eval: async <TArgs extends unknown[], TData = unknown>(
-    script: string,
-    keys: string[],
-    args: TArgs,
-  ): Promise<TData> => {
-    return redis.eval(
-      script,
-      keys.length,
-      ...keys,
-      ...(args as (string | number)[]),
-    ) as Promise<TData>;
-  },
-  evalsha: async <TArgs extends unknown[], TData = unknown>(
+// Interface that matches what @upstash/ratelimit expects
+// The standard redis client implements these methods at runtime
+interface RatelimitRedis {
+  evalsha: <TArgs extends unknown[] = unknown[], TData = unknown>(
     sha1: string,
     keys: string[],
     args: TArgs,
-  ): Promise<TData> => {
-    return redis.evalsha(
-      sha1,
-      keys.length,
-      ...keys,
-      ...(args as (string | number)[]),
-    ) as Promise<TData>;
-  },
-  get: async <TData = string>(key: string): Promise<TData | null> => {
-    return redis.get(key) as Promise<TData | null>;
-  },
-  set: async <TData = string>(
+  ) => Promise<TData>;
+  eval: <TArgs extends unknown[] = unknown[], TData = unknown>(
+    script: string,
+    keys: string[],
+    args: TArgs,
+  ) => Promise<TData>;
+  script: (command: "LOAD", script: string) => Promise<string>;
+  get: <TData = string>(key: string) => Promise<TData | null>;
+  set: <TData = string>(
     key: string,
     value: TData,
-    options?: { ex?: number },
-  ): Promise<TData | "OK" | null> => {
-    const stringValue = String(value);
-    if (options?.ex) {
-      return redis.set(key, stringValue, "EX", options.ex) as Promise<
-        TData | "OK" | null
-      >;
-    }
-    return redis.set(key, stringValue) as Promise<TData | "OK" | null>;
-  },
-};
+    opts?: { ex?: number; px?: number },
+  ) => Promise<"OK" | TData | null>;
+  [key: string]: unknown;
+}
+
+// Type assertion: The standard redis client has evalsha method at runtime
+// @upstash/ratelimit expects a Redis interface, but the standard redis package works fine
+const redisClient = redis as unknown as RatelimitRedis;
 
 // Rate limiter for per-project submissions (more lenient)
 export const projectRatelimit = new Ratelimit({
-  redis: redisAdapter,
+  redis: redisClient,
   limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute per project
   analytics: true,
   prefix: "ratelimit:project",
@@ -56,7 +39,7 @@ export const projectRatelimit = new Ratelimit({
 
 // Rate limiter for per-IP submissions (stricter)
 export const ipRatelimit = new Ratelimit({
-  redis: redisAdapter,
+  redis: redisClient,
   limiter: Ratelimit.slidingWindow(5, "1 m"), // 5 requests per minute per IP
   analytics: true,
   prefix: "ratelimit:ip",
@@ -64,7 +47,7 @@ export const ipRatelimit = new Ratelimit({
 
 // Rate limiter for combined IP + Project (most strict)
 export const combinedRatelimit = new Ratelimit({
-  redis: redisAdapter,
+  redis: redisClient,
   limiter: Ratelimit.slidingWindow(3, "1 m"), // 3 requests per minute per IP+Project combo
   analytics: true,
   prefix: "ratelimit:combined",
