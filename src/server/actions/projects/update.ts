@@ -37,8 +37,7 @@ export async function updateProject(data: z.infer<typeof updateProjectSchema>) {
       },
     });
 
-    revalidatePath("/dashboard/settings", "layout");
-    revalidatePath("/dashboard/projects", "layout");
+    revalidatePath(`/dashboard/${project.slug}/settings`, "page");
 
     return {
       success: true,

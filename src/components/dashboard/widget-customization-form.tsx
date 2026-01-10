@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getBaseUrlClient } from "@/lib/base-url.client";
 import { widgetCustomizationSchema } from "@/lib/schemas";
 import {
   CUSTOM_WIDGET_FONT_FAMILY,
@@ -32,6 +33,7 @@ import { saveWidgetCustomization } from "@/server/actions/widget/customization";
 import { deleteFont } from "@/server/actions/widget/delete-font";
 import { uploadFont } from "@/server/actions/widget/upload-font";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Check, Copy } from "lucide-react";
 import posthog from "posthog-js";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -42,6 +44,7 @@ type WidgetCustomizationForm = z.infer<typeof widgetCustomizationSchema>;
 
 interface WidgetCustomizationFormProps {
   projectId: string;
+  apiKey: string;
   initialData?: {
     primaryColor: string;
     secondaryColor: string;
@@ -57,12 +60,14 @@ interface WidgetCustomizationFormProps {
 
 export function WidgetCustomizationForm({
   projectId,
+  apiKey,
   initialData,
   onDirtyChange,
 }: WidgetCustomizationFormProps) {
   const [saving, setSaving] = React.useState(false);
   const [uploadingFont, setUploadingFont] = React.useState(false);
   const [removingFont, setRemovingFont] = React.useState(false);
+  const [copiedEmbed, setCopiedEmbed] = React.useState(false);
   const [customFontUrl, setCustomFontUrl] = React.useState<string | null>(
     initialData?.fontUrl || null,
   );
@@ -347,6 +352,47 @@ export function WidgetCustomizationForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6 space-y-2 rounded-lg border bg-muted/20 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Embed code</p>
+                <p className="text-xs text-muted-foreground">
+                  Paste this into your site to enable the widget.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const appUrl = getBaseUrlClient();
+                  const embedCode = `<script src="${appUrl}/widget.js" data-project-key="${apiKey}" data-app-url="${appUrl}"></script>`;
+                  navigator.clipboard.writeText(embedCode);
+                  setCopiedEmbed(true);
+                  setTimeout(() => setCopiedEmbed(false), 2000);
+                  toast.success("Embed code copied to clipboard!");
+                  posthog.capture("embed_code_copied", {
+                    project_id: projectId,
+                  });
+                }}
+              >
+                {copiedEmbed ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+                Copy
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={`<script src="${getBaseUrlClient()}/widget.js" data-project-key="${apiKey}" data-app-url="${getBaseUrlClient()}"></script>`}
+                className="font-mono text-xs"
+              />
+            </div>
+          </div>
+
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               <div className="grid gap-4 md:grid-cols-2">

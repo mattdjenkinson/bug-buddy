@@ -146,6 +146,7 @@ export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof User
 export const ProjectScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
   apiKey: 'apiKey',
   secretKey: 'secretKey',
   description: 'description',
@@ -183,14 +184,10 @@ export const GitHubIntegrationScalarFieldEnum = {
   projectId: 'projectId',
   appId: 'appId',
   installationId: 'installationId',
-  privateKey: 'privateKey',
-  personalAccessToken: 'personalAccessToken',
   repositoryOwner: 'repositoryOwner',
   repositoryName: 'repositoryName',
   defaultLabels: 'defaultLabels',
   defaultAssignees: 'defaultAssignees',
-  webhookSecret: 'webhookSecret',
-  webhookId: 'webhookId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -67,6 +67,7 @@ export async function getUserFeedback(options: GetFeedbackOptions) {
         select: {
           id: true,
           name: true,
+          slug: true,
         },
       },
       issue: {
@@ -83,12 +84,16 @@ export async function getUserFeedback(options: GetFeedbackOptions) {
   });
 }
 
-export async function getUserFeedbackForAnalytics(userId: string) {
+export async function getUserFeedbackForAnalytics(
+  userId: string,
+  projectId?: string,
+) {
   return prisma.feedback.findMany({
     where: {
       project: {
         userId,
       },
+      ...(projectId ? { projectId } : {}),
     },
     include: {
       project: {
@@ -123,6 +128,7 @@ export async function getFeedbackById(userId: string, feedbackId: string) {
         select: {
           id: true,
           name: true,
+          slug: true,
         },
       },
       issue: {
@@ -152,6 +158,7 @@ export async function getFeedbackMetadata(userId: string, feedbackId: string) {
       project: {
         select: {
           name: true,
+          slug: true,
         },
       },
     },
@@ -188,6 +195,56 @@ export async function getUserFeedbackStats(userId: string) {
         project: {
           userId,
         },
+        status: "closed",
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    open,
+    inProgress,
+    closed,
+  };
+}
+
+export async function getUserFeedbackStatsForProject(
+  userId: string,
+  projectId: string,
+) {
+  const [total, open, inProgress, closed] = await Promise.all([
+    prisma.feedback.count({
+      where: {
+        project: {
+          userId,
+        },
+        projectId,
+      },
+    }),
+    prisma.feedback.count({
+      where: {
+        project: {
+          userId,
+        },
+        projectId,
+        status: "open",
+      },
+    }),
+    prisma.feedback.count({
+      where: {
+        project: {
+          userId,
+        },
+        projectId,
+        status: "in-progress",
+      },
+    }),
+    prisma.feedback.count({
+      where: {
+        project: {
+          userId,
+        },
+        projectId,
         status: "closed",
       },
     }),

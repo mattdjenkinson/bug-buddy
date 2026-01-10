@@ -57,7 +57,7 @@ export async function saveWidgetCustomization(
       create: createData,
     });
 
-    revalidatePath("/dashboard/settings", "layout");
+    revalidatePath(`/dashboard/${project.slug}/settings`, "page");
     return { success: true, customization };
   } catch (error) {
     if (error instanceof z.ZodError) {

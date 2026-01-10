@@ -6,6 +6,7 @@ export async function getUserProjects(userId: string) {
     select: {
       id: true,
       name: true,
+      slug: true,
       description: true,
       apiKey: true,
       secretKey: true,
@@ -45,6 +46,25 @@ export async function getUserProjectsBasic(userId: string) {
   });
 }
 
+export async function getUserProjectsForSwitcher(userId: string) {
+  return prisma.project.findMany({
+    where: { userId },
+    select: { id: true, name: true, slug: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getUserProjectBySlug(userId: string, slug: string) {
+  return prisma.project.findFirst({
+    where: { userId, slug },
+    include: {
+      githubIntegration: true,
+      widgetCustomization: true,
+      _count: { select: { feedback: true } },
+    },
+  });
+}
+
 export async function getUserProjectCount(userId: string) {
   return prisma.project.count({
     where: { userId },
@@ -54,6 +74,16 @@ export async function getUserProjectCount(userId: string) {
 export async function getProjectByApiKey(apiKey: string) {
   return prisma.project.findUnique({
     where: { apiKey },
+    include: {
+      widgetCustomization: true,
+      githubIntegration: true,
+    },
+  });
+}
+
+export async function getProjectBySlug(slug: string) {
+  return prisma.project.findUnique({
+    where: { slug },
     include: {
       widgetCustomization: true,
       githubIntegration: true,

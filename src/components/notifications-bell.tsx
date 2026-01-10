@@ -56,6 +56,7 @@ interface Notification {
       project: {
         id: string;
         name: string;
+        slug: string;
       };
     };
   } | null;
@@ -102,7 +103,10 @@ export function NotificationsBell() {
       markAsRead(notification.id);
     }
     if (notification.issue?.feedback?.id) {
-      router.push(`/dashboard/feedback/${notification.issue.feedback.id}`);
+      const slug = notification.issue.feedback.project.slug;
+      router.push(
+        `/dashboard/${slug}/feedback/${notification.issue.feedback.id}`,
+      );
       setIsOpen(false);
     }
   };

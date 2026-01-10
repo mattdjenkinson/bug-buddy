@@ -27,6 +27,7 @@ export type AggregateProject = {
 export type ProjectMinAggregateOutputType = {
   id: string | null
   name: string | null
+  slug: string | null
   apiKey: string | null
   secretKey: string | null
   description: string | null
@@ -38,6 +39,7 @@ export type ProjectMinAggregateOutputType = {
 export type ProjectMaxAggregateOutputType = {
   id: string | null
   name: string | null
+  slug: string | null
   apiKey: string | null
   secretKey: string | null
   description: string | null
@@ -49,6 +51,7 @@ export type ProjectMaxAggregateOutputType = {
 export type ProjectCountAggregateOutputType = {
   id: number
   name: number
+  slug: number
   apiKey: number
   secretKey: number
   description: number
@@ -63,6 +66,7 @@ export type ProjectCountAggregateOutputType = {
 export type ProjectMinAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   apiKey?: true
   secretKey?: true
   description?: true
@@ -74,6 +78,7 @@ export type ProjectMinAggregateInputType = {
 export type ProjectMaxAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   apiKey?: true
   secretKey?: true
   description?: true
@@ -85,6 +90,7 @@ export type ProjectMaxAggregateInputType = {
 export type ProjectCountAggregateInputType = {
   id?: true
   name?: true
+  slug?: true
   apiKey?: true
   secretKey?: true
   description?: true
@@ -170,6 +176,7 @@ export type ProjectGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type ProjectGroupByOutputType = {
   id: string
   name: string
+  slug: string
   apiKey: string
   secretKey: string | null
   description: string | null
@@ -203,6 +210,7 @@ export type ProjectWhereInput = {
   NOT?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
   id?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
+  slug?: Prisma.StringFilter<"Project"> | string
   apiKey?: Prisma.StringFilter<"Project"> | string
   secretKey?: Prisma.StringNullableFilter<"Project"> | string | null
   description?: Prisma.StringNullableFilter<"Project"> | string | null
@@ -219,6 +227,7 @@ export type ProjectWhereInput = {
 export type ProjectOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
   secretKey?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -234,6 +243,7 @@ export type ProjectOrderByWithRelationInput = {
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  slug?: string
   apiKey?: string
   secretKey?: string
   AND?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
@@ -249,11 +259,12 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   feedback?: Prisma.FeedbackListRelationFilter
   githubIntegration?: Prisma.XOR<Prisma.GitHubIntegrationNullableScalarRelationFilter, Prisma.GitHubIntegrationWhereInput> | null
   widgetCustomization?: Prisma.XOR<Prisma.WidgetCustomizationNullableScalarRelationFilter, Prisma.WidgetCustomizationWhereInput> | null
-}, "id" | "apiKey" | "secretKey">
+}, "id" | "slug" | "apiKey" | "secretKey">
 
 export type ProjectOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
   secretKey?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -272,6 +283,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProjectScalarWhereWithAggregatesInput | Prisma.ProjectScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Project"> | string
   name?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  slug?: Prisma.StringWithAggregatesFilter<"Project"> | string
   apiKey?: Prisma.StringWithAggregatesFilter<"Project"> | string
   secretKey?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
@@ -284,6 +296,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
 export type ProjectCreateInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -299,6 +312,7 @@ export type ProjectCreateInput = {
 export type ProjectUncheckedCreateInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -314,6 +328,7 @@ export type ProjectUncheckedCreateInput = {
 export type ProjectUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -329,6 +344,7 @@ export type ProjectUpdateInput = {
 export type ProjectUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -344,6 +360,7 @@ export type ProjectUncheckedUpdateInput = {
 export type ProjectCreateManyInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -356,6 +373,7 @@ export type ProjectCreateManyInput = {
 export type ProjectUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -367,6 +385,7 @@ export type ProjectUpdateManyMutationInput = {
 export type ProjectUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -397,6 +416,7 @@ export type StringNullableListFilter<$PrismaModel = never> = {
 export type ProjectCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
   secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -409,6 +429,7 @@ export type ProjectCountOrderByAggregateInput = {
 export type ProjectMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
   secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -420,6 +441,7 @@ export type ProjectMaxOrderByAggregateInput = {
 export type ProjectMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  slug?: Prisma.SortOrder
   apiKey?: Prisma.SortOrder
   secretKey?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -529,6 +551,7 @@ export type ProjectUpdateOneRequiredWithoutWidgetCustomizationNestedInput = {
 export type ProjectCreateWithoutUserInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -543,6 +566,7 @@ export type ProjectCreateWithoutUserInput = {
 export type ProjectUncheckedCreateWithoutUserInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -586,6 +610,7 @@ export type ProjectScalarWhereInput = {
   NOT?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[]
   id?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
+  slug?: Prisma.StringFilter<"Project"> | string
   apiKey?: Prisma.StringFilter<"Project"> | string
   secretKey?: Prisma.StringNullableFilter<"Project"> | string | null
   description?: Prisma.StringNullableFilter<"Project"> | string | null
@@ -598,6 +623,7 @@ export type ProjectScalarWhereInput = {
 export type ProjectCreateWithoutFeedbackInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -612,6 +638,7 @@ export type ProjectCreateWithoutFeedbackInput = {
 export type ProjectUncheckedCreateWithoutFeedbackInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -642,6 +669,7 @@ export type ProjectUpdateToOneWithWhereWithoutFeedbackInput = {
 export type ProjectUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -656,6 +684,7 @@ export type ProjectUpdateWithoutFeedbackInput = {
 export type ProjectUncheckedUpdateWithoutFeedbackInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -670,6 +699,7 @@ export type ProjectUncheckedUpdateWithoutFeedbackInput = {
 export type ProjectCreateWithoutGithubIntegrationInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -684,6 +714,7 @@ export type ProjectCreateWithoutGithubIntegrationInput = {
 export type ProjectUncheckedCreateWithoutGithubIntegrationInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -714,6 +745,7 @@ export type ProjectUpdateToOneWithWhereWithoutGithubIntegrationInput = {
 export type ProjectUpdateWithoutGithubIntegrationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -728,6 +760,7 @@ export type ProjectUpdateWithoutGithubIntegrationInput = {
 export type ProjectUncheckedUpdateWithoutGithubIntegrationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -742,6 +775,7 @@ export type ProjectUncheckedUpdateWithoutGithubIntegrationInput = {
 export type ProjectCreateWithoutWidgetCustomizationInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -756,6 +790,7 @@ export type ProjectCreateWithoutWidgetCustomizationInput = {
 export type ProjectUncheckedCreateWithoutWidgetCustomizationInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -786,6 +821,7 @@ export type ProjectUpdateToOneWithWhereWithoutWidgetCustomizationInput = {
 export type ProjectUpdateWithoutWidgetCustomizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -800,6 +836,7 @@ export type ProjectUpdateWithoutWidgetCustomizationInput = {
 export type ProjectUncheckedUpdateWithoutWidgetCustomizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -814,6 +851,7 @@ export type ProjectUncheckedUpdateWithoutWidgetCustomizationInput = {
 export type ProjectCreateManyUserInput = {
   id?: string
   name: string
+  slug: string
   apiKey: string
   secretKey?: string | null
   description?: string | null
@@ -825,6 +863,7 @@ export type ProjectCreateManyUserInput = {
 export type ProjectUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -839,6 +878,7 @@ export type ProjectUpdateWithoutUserInput = {
 export type ProjectUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -853,6 +893,7 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
 export type ProjectUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
   apiKey?: Prisma.StringFieldUpdateOperationsInput | string
   secretKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -895,6 +936,7 @@ export type ProjectCountOutputTypeCountFeedbackArgs<ExtArgs extends runtime.Type
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slug?: boolean
   apiKey?: boolean
   secretKey?: boolean
   description?: boolean
@@ -912,6 +954,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slug?: boolean
   apiKey?: boolean
   secretKey?: boolean
   description?: boolean
@@ -925,6 +968,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  slug?: boolean
   apiKey?: boolean
   secretKey?: boolean
   description?: boolean
@@ -938,6 +982,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type ProjectSelectScalar = {
   id?: boolean
   name?: boolean
+  slug?: boolean
   apiKey?: boolean
   secretKey?: boolean
   description?: boolean
@@ -947,7 +992,7 @@ export type ProjectSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "apiKey" | "secretKey" | "description" | "allowedDomains" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "apiKey" | "secretKey" | "description" | "allowedDomains" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   feedback?: boolean | Prisma.Project$feedbackArgs<ExtArgs>
@@ -973,6 +1018,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
+    slug: string
     apiKey: string
     secretKey: string | null
     description: string | null
@@ -1409,6 +1455,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
 export interface ProjectFieldRefs {
   readonly id: Prisma.FieldRef<"Project", 'String'>
   readonly name: Prisma.FieldRef<"Project", 'String'>
+  readonly slug: Prisma.FieldRef<"Project", 'String'>
   readonly apiKey: Prisma.FieldRef<"Project", 'String'>
   readonly secretKey: Prisma.FieldRef<"Project", 'String'>
   readonly description: Prisma.FieldRef<"Project", 'String'>

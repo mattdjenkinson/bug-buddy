@@ -290,7 +290,7 @@ export function ProjectSettingsForm({
       }
 
       toast.success("Project deleted successfully!");
-      router.push("/dashboard/projects");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error deleting project:", error);
       toast.error(

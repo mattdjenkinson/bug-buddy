@@ -75,8 +75,14 @@ export async function closeIssue(data: z.infer<typeof closeIssueSchema>) {
     });
 
     // Revalidate the feedback detail page
-    revalidatePath(`/dashboard/feedback/${issue.feedbackId}`, "page");
-    revalidatePath("/dashboard/feedback", "layout");
+    revalidatePath(
+      `/dashboard/${issue.feedback.project.slug}/feedback/${issue.feedbackId}`,
+      "page",
+    );
+    revalidatePath(
+      `/dashboard/${issue.feedback.project.slug}/feedback`,
+      "layout",
+    );
 
     return { success: true, issue: updatedIssue };
   } catch (error) {

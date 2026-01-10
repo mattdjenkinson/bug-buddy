@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { GitHubAuthPrompt } from "./github-auth-prompt";
 
 interface Feedback {
   id: string;
@@ -36,6 +35,7 @@ interface Feedback {
   project: {
     id: string;
     name: string;
+    slug: string;
   };
   issue: {
     id: string;
@@ -54,12 +54,14 @@ interface DashboardOverviewProps {
     closed: number;
   };
   hasProjects: boolean;
+  projectSlug?: string;
 }
 
 export function DashboardOverview({
   latestFeedback,
   stats,
   hasProjects,
+  projectSlug,
 }: DashboardOverviewProps) {
   const router = useRouter();
 
@@ -85,7 +87,7 @@ export function DashboardOverview({
               feedback from your users.
             </p>
             <Button asChild>
-              <Link href="/dashboard/projects?new=true">
+              <Link href="/dashboard/new">
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Create Your First Project
               </Link>
@@ -107,9 +109,6 @@ export function DashboardOverview({
           Overview of your feedback and analytics
         </p>
       </div>
-
-      {/* GitHub Auth Prompt */}
-      <GitHubAuthPrompt />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -171,7 +170,15 @@ export function DashboardOverview({
           </p>
         </div>
         <Button variant="outline" asChild>
-          <Link href="/dashboard/feedback">View All</Link>
+          <Link
+            href={
+              projectSlug
+                ? `/dashboard/${projectSlug}/feedback`
+                : "/dashboard/feedback"
+            }
+          >
+            View All
+          </Link>
         </Button>
       </div>
 
@@ -187,7 +194,13 @@ export function DashboardOverview({
             <Card
               key={item.id}
               className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => router.push(`/dashboard/feedback/${item.id}`)}
+              onClick={() =>
+                router.push(
+                  projectSlug
+                    ? `/dashboard/${projectSlug}/feedback/${item.id}`
+                    : `/dashboard/feedback/${item.id}`,
+                )
+              }
             >
               <CardHeader>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

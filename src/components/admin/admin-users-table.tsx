@@ -35,7 +35,6 @@ import {
   Github,
   Unlock,
   Users,
-  Webhook,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -224,7 +223,6 @@ export function AdminUsersTable() {
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>GitHub</TableHead>
-              <TableHead>Webhook</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -255,7 +253,6 @@ export function AdminUsersTable() {
               users.map((user) => {
                 const githubStatus = githubStatusData?.[user.id];
                 const hasGitHub = githubStatus?.hasGitHub ?? false;
-                const hasWebhook = githubStatus?.hasWebhook ?? false;
 
                 return (
                   <TableRow key={user.id}>
@@ -308,21 +305,6 @@ export function AdminUsersTable() {
                         ) : (
                           <>
                             <Github className="h-4 w-4 text-muted-foreground" />
-                            <XCircle className="h-3 w-3 text-muted-foreground" />
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {hasWebhook ? (
-                          <>
-                            <Webhook className="h-4 w-4 text-green-600" />
-                            <CheckCircle2 className="h-3 w-3 text-green-600" />
-                          </>
-                        ) : (
-                          <>
-                            <Webhook className="h-4 w-4 text-muted-foreground" />
                             <XCircle className="h-3 w-3 text-muted-foreground" />
                           </>
                         )}

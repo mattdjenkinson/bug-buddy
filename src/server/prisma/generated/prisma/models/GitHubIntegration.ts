@@ -20,18 +20,8 @@ export type GitHubIntegrationModel = runtime.Types.Result.DefaultSelection<Prism
 
 export type AggregateGitHubIntegration = {
   _count: GitHubIntegrationCountAggregateOutputType | null
-  _avg: GitHubIntegrationAvgAggregateOutputType | null
-  _sum: GitHubIntegrationSumAggregateOutputType | null
   _min: GitHubIntegrationMinAggregateOutputType | null
   _max: GitHubIntegrationMaxAggregateOutputType | null
-}
-
-export type GitHubIntegrationAvgAggregateOutputType = {
-  webhookId: number | null
-}
-
-export type GitHubIntegrationSumAggregateOutputType = {
-  webhookId: number | null
 }
 
 export type GitHubIntegrationMinAggregateOutputType = {
@@ -39,12 +29,8 @@ export type GitHubIntegrationMinAggregateOutputType = {
   projectId: string | null
   appId: string | null
   installationId: string | null
-  privateKey: string | null
-  personalAccessToken: string | null
   repositoryOwner: string | null
   repositoryName: string | null
-  webhookSecret: string | null
-  webhookId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,12 +40,8 @@ export type GitHubIntegrationMaxAggregateOutputType = {
   projectId: string | null
   appId: string | null
   installationId: string | null
-  privateKey: string | null
-  personalAccessToken: string | null
   repositoryOwner: string | null
   repositoryName: string | null
-  webhookSecret: string | null
-  webhookId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,39 +51,23 @@ export type GitHubIntegrationCountAggregateOutputType = {
   projectId: number
   appId: number
   installationId: number
-  privateKey: number
-  personalAccessToken: number
   repositoryOwner: number
   repositoryName: number
   defaultLabels: number
   defaultAssignees: number
-  webhookSecret: number
-  webhookId: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
-export type GitHubIntegrationAvgAggregateInputType = {
-  webhookId?: true
-}
-
-export type GitHubIntegrationSumAggregateInputType = {
-  webhookId?: true
-}
-
 export type GitHubIntegrationMinAggregateInputType = {
   id?: true
   projectId?: true
   appId?: true
   installationId?: true
-  privateKey?: true
-  personalAccessToken?: true
   repositoryOwner?: true
   repositoryName?: true
-  webhookSecret?: true
-  webhookId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -111,12 +77,8 @@ export type GitHubIntegrationMaxAggregateInputType = {
   projectId?: true
   appId?: true
   installationId?: true
-  privateKey?: true
-  personalAccessToken?: true
   repositoryOwner?: true
   repositoryName?: true
-  webhookSecret?: true
-  webhookId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -126,14 +88,10 @@ export type GitHubIntegrationCountAggregateInputType = {
   projectId?: true
   appId?: true
   installationId?: true
-  privateKey?: true
-  personalAccessToken?: true
   repositoryOwner?: true
   repositoryName?: true
   defaultLabels?: true
   defaultAssignees?: true
-  webhookSecret?: true
-  webhookId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -177,18 +135,6 @@ export type GitHubIntegrationAggregateArgs<ExtArgs extends runtime.Types.Extensi
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: GitHubIntegrationAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: GitHubIntegrationSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: GitHubIntegrationMinAggregateInputType
@@ -219,8 +165,6 @@ export type GitHubIntegrationGroupByArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   _count?: GitHubIntegrationCountAggregateInputType | true
-  _avg?: GitHubIntegrationAvgAggregateInputType
-  _sum?: GitHubIntegrationSumAggregateInputType
   _min?: GitHubIntegrationMinAggregateInputType
   _max?: GitHubIntegrationMaxAggregateInputType
 }
@@ -230,19 +174,13 @@ export type GitHubIntegrationGroupByOutputType = {
   projectId: string
   appId: string | null
   installationId: string | null
-  privateKey: string | null
-  personalAccessToken: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels: string[]
   defaultAssignees: string[]
-  webhookSecret: string | null
-  webhookId: number | null
   createdAt: Date
   updatedAt: Date
   _count: GitHubIntegrationCountAggregateOutputType | null
-  _avg: GitHubIntegrationAvgAggregateOutputType | null
-  _sum: GitHubIntegrationSumAggregateOutputType | null
   _min: GitHubIntegrationMinAggregateOutputType | null
   _max: GitHubIntegrationMaxAggregateOutputType | null
 }
@@ -270,14 +208,10 @@ export type GitHubIntegrationWhereInput = {
   projectId?: Prisma.StringFilter<"GitHubIntegration"> | string
   appId?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
   installationId?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  privateKey?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  personalAccessToken?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
   repositoryOwner?: Prisma.StringFilter<"GitHubIntegration"> | string
   repositoryName?: Prisma.StringFilter<"GitHubIntegration"> | string
   defaultLabels?: Prisma.StringNullableListFilter<"GitHubIntegration">
   defaultAssignees?: Prisma.StringNullableListFilter<"GitHubIntegration">
-  webhookSecret?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  webhookId?: Prisma.IntNullableFilter<"GitHubIntegration"> | number | null
   createdAt?: Prisma.DateTimeFilter<"GitHubIntegration"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GitHubIntegration"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
@@ -288,14 +222,10 @@ export type GitHubIntegrationOrderByWithRelationInput = {
   projectId?: Prisma.SortOrder
   appId?: Prisma.SortOrderInput | Prisma.SortOrder
   installationId?: Prisma.SortOrderInput | Prisma.SortOrder
-  privateKey?: Prisma.SortOrderInput | Prisma.SortOrder
-  personalAccessToken?: Prisma.SortOrderInput | Prisma.SortOrder
   repositoryOwner?: Prisma.SortOrder
   repositoryName?: Prisma.SortOrder
   defaultLabels?: Prisma.SortOrder
   defaultAssignees?: Prisma.SortOrder
-  webhookSecret?: Prisma.SortOrderInput | Prisma.SortOrder
-  webhookId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
@@ -309,14 +239,10 @@ export type GitHubIntegrationWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GitHubIntegrationWhereInput | Prisma.GitHubIntegrationWhereInput[]
   appId?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
   installationId?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  privateKey?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  personalAccessToken?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
   repositoryOwner?: Prisma.StringFilter<"GitHubIntegration"> | string
   repositoryName?: Prisma.StringFilter<"GitHubIntegration"> | string
   defaultLabels?: Prisma.StringNullableListFilter<"GitHubIntegration">
   defaultAssignees?: Prisma.StringNullableListFilter<"GitHubIntegration">
-  webhookSecret?: Prisma.StringNullableFilter<"GitHubIntegration"> | string | null
-  webhookId?: Prisma.IntNullableFilter<"GitHubIntegration"> | number | null
   createdAt?: Prisma.DateTimeFilter<"GitHubIntegration"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GitHubIntegration"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
@@ -327,21 +253,15 @@ export type GitHubIntegrationOrderByWithAggregationInput = {
   projectId?: Prisma.SortOrder
   appId?: Prisma.SortOrderInput | Prisma.SortOrder
   installationId?: Prisma.SortOrderInput | Prisma.SortOrder
-  privateKey?: Prisma.SortOrderInput | Prisma.SortOrder
-  personalAccessToken?: Prisma.SortOrderInput | Prisma.SortOrder
   repositoryOwner?: Prisma.SortOrder
   repositoryName?: Prisma.SortOrder
   defaultLabels?: Prisma.SortOrder
   defaultAssignees?: Prisma.SortOrder
-  webhookSecret?: Prisma.SortOrderInput | Prisma.SortOrder
-  webhookId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.GitHubIntegrationCountOrderByAggregateInput
-  _avg?: Prisma.GitHubIntegrationAvgOrderByAggregateInput
   _max?: Prisma.GitHubIntegrationMaxOrderByAggregateInput
   _min?: Prisma.GitHubIntegrationMinOrderByAggregateInput
-  _sum?: Prisma.GitHubIntegrationSumOrderByAggregateInput
 }
 
 export type GitHubIntegrationScalarWhereWithAggregatesInput = {
@@ -352,14 +272,10 @@ export type GitHubIntegrationScalarWhereWithAggregatesInput = {
   projectId?: Prisma.StringWithAggregatesFilter<"GitHubIntegration"> | string
   appId?: Prisma.StringNullableWithAggregatesFilter<"GitHubIntegration"> | string | null
   installationId?: Prisma.StringNullableWithAggregatesFilter<"GitHubIntegration"> | string | null
-  privateKey?: Prisma.StringNullableWithAggregatesFilter<"GitHubIntegration"> | string | null
-  personalAccessToken?: Prisma.StringNullableWithAggregatesFilter<"GitHubIntegration"> | string | null
   repositoryOwner?: Prisma.StringWithAggregatesFilter<"GitHubIntegration"> | string
   repositoryName?: Prisma.StringWithAggregatesFilter<"GitHubIntegration"> | string
   defaultLabels?: Prisma.StringNullableListFilter<"GitHubIntegration">
   defaultAssignees?: Prisma.StringNullableListFilter<"GitHubIntegration">
-  webhookSecret?: Prisma.StringNullableWithAggregatesFilter<"GitHubIntegration"> | string | null
-  webhookId?: Prisma.IntNullableWithAggregatesFilter<"GitHubIntegration"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GitHubIntegration"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GitHubIntegration"> | Date | string
 }
@@ -368,14 +284,10 @@ export type GitHubIntegrationCreateInput = {
   id?: string
   appId?: string | null
   installationId?: string | null
-  privateKey?: string | null
-  personalAccessToken?: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels?: Prisma.GitHubIntegrationCreatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationCreatedefaultAssigneesInput | string[]
-  webhookSecret?: string | null
-  webhookId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutGithubIntegrationInput
@@ -386,14 +298,10 @@ export type GitHubIntegrationUncheckedCreateInput = {
   projectId: string
   appId?: string | null
   installationId?: string | null
-  privateKey?: string | null
-  personalAccessToken?: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels?: Prisma.GitHubIntegrationCreatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationCreatedefaultAssigneesInput | string[]
-  webhookSecret?: string | null
-  webhookId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -402,14 +310,10 @@ export type GitHubIntegrationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutGithubIntegrationNestedInput
@@ -420,14 +324,10 @@ export type GitHubIntegrationUncheckedUpdateInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -437,14 +337,10 @@ export type GitHubIntegrationCreateManyInput = {
   projectId: string
   appId?: string | null
   installationId?: string | null
-  privateKey?: string | null
-  personalAccessToken?: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels?: Prisma.GitHubIntegrationCreatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationCreatedefaultAssigneesInput | string[]
-  webhookSecret?: string | null
-  webhookId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -453,14 +349,10 @@ export type GitHubIntegrationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -470,14 +362,10 @@ export type GitHubIntegrationUncheckedUpdateManyInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -492,20 +380,12 @@ export type GitHubIntegrationCountOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   appId?: Prisma.SortOrder
   installationId?: Prisma.SortOrder
-  privateKey?: Prisma.SortOrder
-  personalAccessToken?: Prisma.SortOrder
   repositoryOwner?: Prisma.SortOrder
   repositoryName?: Prisma.SortOrder
   defaultLabels?: Prisma.SortOrder
   defaultAssignees?: Prisma.SortOrder
-  webhookSecret?: Prisma.SortOrder
-  webhookId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type GitHubIntegrationAvgOrderByAggregateInput = {
-  webhookId?: Prisma.SortOrder
 }
 
 export type GitHubIntegrationMaxOrderByAggregateInput = {
@@ -513,12 +393,8 @@ export type GitHubIntegrationMaxOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   appId?: Prisma.SortOrder
   installationId?: Prisma.SortOrder
-  privateKey?: Prisma.SortOrder
-  personalAccessToken?: Prisma.SortOrder
   repositoryOwner?: Prisma.SortOrder
   repositoryName?: Prisma.SortOrder
-  webhookSecret?: Prisma.SortOrder
-  webhookId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -528,18 +404,10 @@ export type GitHubIntegrationMinOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   appId?: Prisma.SortOrder
   installationId?: Prisma.SortOrder
-  privateKey?: Prisma.SortOrder
-  personalAccessToken?: Prisma.SortOrder
   repositoryOwner?: Prisma.SortOrder
   repositoryName?: Prisma.SortOrder
-  webhookSecret?: Prisma.SortOrder
-  webhookId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type GitHubIntegrationSumOrderByAggregateInput = {
-  webhookId?: Prisma.SortOrder
 }
 
 export type GitHubIntegrationCreateNestedOneWithoutProjectInput = {
@@ -592,26 +460,14 @@ export type GitHubIntegrationUpdatedefaultAssigneesInput = {
   push?: string | string[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type GitHubIntegrationCreateWithoutProjectInput = {
   id?: string
   appId?: string | null
   installationId?: string | null
-  privateKey?: string | null
-  personalAccessToken?: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels?: Prisma.GitHubIntegrationCreatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationCreatedefaultAssigneesInput | string[]
-  webhookSecret?: string | null
-  webhookId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -620,14 +476,10 @@ export type GitHubIntegrationUncheckedCreateWithoutProjectInput = {
   id?: string
   appId?: string | null
   installationId?: string | null
-  privateKey?: string | null
-  personalAccessToken?: string | null
   repositoryOwner: string
   repositoryName: string
   defaultLabels?: Prisma.GitHubIntegrationCreatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationCreatedefaultAssigneesInput | string[]
-  webhookSecret?: string | null
-  webhookId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -652,14 +504,10 @@ export type GitHubIntegrationUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -668,14 +516,10 @@ export type GitHubIntegrationUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   appId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   installationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  privateKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  personalAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
   repositoryName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultLabels?: Prisma.GitHubIntegrationUpdatedefaultLabelsInput | string[]
   defaultAssignees?: Prisma.GitHubIntegrationUpdatedefaultAssigneesInput | string[]
-  webhookSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -687,14 +531,10 @@ export type GitHubIntegrationSelect<ExtArgs extends runtime.Types.Extensions.Int
   projectId?: boolean
   appId?: boolean
   installationId?: boolean
-  privateKey?: boolean
-  personalAccessToken?: boolean
   repositoryOwner?: boolean
   repositoryName?: boolean
   defaultLabels?: boolean
   defaultAssignees?: boolean
-  webhookSecret?: boolean
-  webhookId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -705,14 +545,10 @@ export type GitHubIntegrationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   projectId?: boolean
   appId?: boolean
   installationId?: boolean
-  privateKey?: boolean
-  personalAccessToken?: boolean
   repositoryOwner?: boolean
   repositoryName?: boolean
   defaultLabels?: boolean
   defaultAssignees?: boolean
-  webhookSecret?: boolean
-  webhookId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -723,14 +559,10 @@ export type GitHubIntegrationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   projectId?: boolean
   appId?: boolean
   installationId?: boolean
-  privateKey?: boolean
-  personalAccessToken?: boolean
   repositoryOwner?: boolean
   repositoryName?: boolean
   defaultLabels?: boolean
   defaultAssignees?: boolean
-  webhookSecret?: boolean
-  webhookId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -741,19 +573,15 @@ export type GitHubIntegrationSelectScalar = {
   projectId?: boolean
   appId?: boolean
   installationId?: boolean
-  privateKey?: boolean
-  personalAccessToken?: boolean
   repositoryOwner?: boolean
   repositoryName?: boolean
   defaultLabels?: boolean
   defaultAssignees?: boolean
-  webhookSecret?: boolean
-  webhookId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type GitHubIntegrationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "appId" | "installationId" | "privateKey" | "personalAccessToken" | "repositoryOwner" | "repositoryName" | "defaultLabels" | "defaultAssignees" | "webhookSecret" | "webhookId" | "createdAt" | "updatedAt", ExtArgs["result"]["gitHubIntegration"]>
+export type GitHubIntegrationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "appId" | "installationId" | "repositoryOwner" | "repositoryName" | "defaultLabels" | "defaultAssignees" | "createdAt" | "updatedAt", ExtArgs["result"]["gitHubIntegration"]>
 export type GitHubIntegrationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
 }
@@ -774,14 +602,10 @@ export type $GitHubIntegrationPayload<ExtArgs extends runtime.Types.Extensions.I
     projectId: string
     appId: string | null
     installationId: string | null
-    privateKey: string | null
-    personalAccessToken: string | null
     repositoryOwner: string
     repositoryName: string
     defaultLabels: string[]
     defaultAssignees: string[]
-    webhookSecret: string | null
-    webhookId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["gitHubIntegration"]>
@@ -1212,14 +1036,10 @@ export interface GitHubIntegrationFieldRefs {
   readonly projectId: Prisma.FieldRef<"GitHubIntegration", 'String'>
   readonly appId: Prisma.FieldRef<"GitHubIntegration", 'String'>
   readonly installationId: Prisma.FieldRef<"GitHubIntegration", 'String'>
-  readonly privateKey: Prisma.FieldRef<"GitHubIntegration", 'String'>
-  readonly personalAccessToken: Prisma.FieldRef<"GitHubIntegration", 'String'>
   readonly repositoryOwner: Prisma.FieldRef<"GitHubIntegration", 'String'>
   readonly repositoryName: Prisma.FieldRef<"GitHubIntegration", 'String'>
   readonly defaultLabels: Prisma.FieldRef<"GitHubIntegration", 'String[]'>
   readonly defaultAssignees: Prisma.FieldRef<"GitHubIntegration", 'String[]'>
-  readonly webhookSecret: Prisma.FieldRef<"GitHubIntegration", 'String'>
-  readonly webhookId: Prisma.FieldRef<"GitHubIntegration", 'Int'>
   readonly createdAt: Prisma.FieldRef<"GitHubIntegration", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"GitHubIntegration", 'DateTime'>
 }

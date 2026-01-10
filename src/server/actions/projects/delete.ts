@@ -31,8 +31,8 @@ export async function deleteProject(data: z.infer<typeof deleteProjectSchema>) {
       where: { id: validated.projectId },
     });
 
-    revalidatePath("/dashboard/settings", "layout");
-    revalidatePath("/dashboard/projects", "layout");
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/dashboard/new", "page");
 
     return {
       success: true,

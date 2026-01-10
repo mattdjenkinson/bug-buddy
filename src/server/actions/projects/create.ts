@@ -1,34 +1,20 @@
 "use server";
 
+import { serverEnv } from "@/env";
 import { requireAuth } from "@/lib/auth/helpers";
-import { createWebhook } from "@/lib/github";
+import { getInstallationAccessToken } from "@/lib/github-app-auth";
 import { prisma } from "@/lib/prisma";
 import { createProjectSchema } from "@/lib/schemas";
+import { generateUniqueProjectSlug } from "@/server/services/project-slug.service";
 import { Octokit } from "@octokit/rest";
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export async function createProject(data: z.infer<typeof createProjectSchema>) {
+export async function createProject(data: z.input<typeof createProjectSchema>) {
   try {
     const session = await requireAuth();
     const validated = createProjectSchema.parse(data);
-
-    // Verify GitHub account is connected (required for repository)
-    const account = await prisma.account.findFirst({
-      where: {
-        userId: session.user.id,
-        providerId: "github",
-      },
-    });
-
-    if (!account?.accessToken) {
-      return {
-        success: false,
-        error:
-          "GitHub account not connected. Please connect your GitHub account to create a project.",
-      };
-    }
 
     // Validate repository format and access
     const [repositoryOwner, repositoryName] = validated.repository.split("/");
@@ -39,9 +25,12 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       };
     }
 
-    // Verify token has access to the repository
+    // Verify GitHub App installation has access to the repository
     try {
-      const octokit = new Octokit({ auth: account.accessToken });
+      const installationToken = await getInstallationAccessToken(
+        validated.installationId,
+      );
+      const octokit = new Octokit({ auth: installationToken });
       const { data: repo } = await octokit.rest.repos.get({
         owner: repositoryOwner,
         repo: repositoryName,
@@ -59,14 +48,14 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
       if (githubError.status === 404) {
         return {
           success: false,
-          error: `Repository ${repositoryOwner}/${repositoryName} not found or you don't have access to it.`,
+          error: `Repository ${repositoryOwner}/${repositoryName} not found or the GitHub App is not installed on it.`,
         };
       }
       if (githubError.status === 403) {
         return {
           success: false,
           error:
-            "Access denied. Your GitHub OAuth token doesn't have the 'repo' scope required. Please re-authenticate with GitHub.",
+            "Access denied. The GitHub App does not have permission to access this repository. Ensure the app is installed and has Issues read/write permission.",
         };
       }
       throw error;
@@ -75,11 +64,14 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
     // Generate API key and secret key
     const apiKey = `bb_${randomBytes(32).toString("hex")}`;
     const secretKey = `bb_sk_${randomBytes(32).toString("hex")}`;
+    const slug = await generateUniqueProjectSlug(validated.name);
 
     const project = await prisma.project.create({
       data: {
         name: validated.name,
+        slug,
         description: validated.description || null,
+        allowedDomains: validated.allowedDomains,
         apiKey,
         secretKey,
         userId: session.user.id,
@@ -94,39 +86,28 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
     });
 
     // Create GitHub integration (repository is required)
-    const webhookSecret = randomBytes(32).toString("hex");
-
     await prisma.gitHubIntegration.create({
       data: {
         projectId: project.id,
+        appId: serverEnv.GITHUB_APP_ID,
+        installationId: validated.installationId,
         repositoryOwner,
         repositoryName,
-        webhookSecret,
-        defaultLabels: [],
-        defaultAssignees: [],
+        defaultLabels: validated.defaultLabels,
+        defaultAssignees: validated.defaultAssignees,
       },
     });
 
-    // Automatically create webhook if it doesn't exist
-    // This will fail gracefully if the token doesn't have admin:repo_hook scope
-    const webhookResult = await createWebhook(project.id);
-    let webhookWarning: string | undefined;
-    if (!webhookResult.success && webhookResult.error) {
-      // Log the error but don't fail project creation
-      // The webhook can be created manually later
-      console.warn(
-        `Webhook creation failed for project ${project.id}: ${webhookResult.error}`,
-      );
-      webhookWarning = webhookResult.error;
-    }
-
-    revalidatePath("/dashboard/projects", "layout");
+    // Project-scoped dashboard will be server-rendered; invalidate the entrypoint.
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/dashboard/new", "page");
 
     return {
       success: true,
       project: {
         id: project.id,
         name: project.name,
+        slug: project.slug,
         description: project.description,
         apiKey: project.apiKey,
         createdAt: project.createdAt.toISOString(),
@@ -136,7 +117,6 @@ export async function createProject(data: z.infer<typeof createProjectSchema>) {
           repositoryName,
         },
       },
-      webhookWarning,
     };
   } catch (error) {
     if (error instanceof z.ZodError) {

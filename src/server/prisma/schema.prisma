@@ -84,6 +84,7 @@ model User {
 model Project {
     id             String   @id @default(cuid())
     name           String
+    slug           String   @unique
     apiKey         String   @unique
     secretKey      String?  @unique
     description    String?
@@ -125,20 +126,16 @@ model Feedback {
 }
 
 model GitHubIntegration {
-    id                  String   @id @default(cuid())
-    projectId           String   @unique
-    appId               String? // GitHub App ID
-    installationId      String? // GitHub App Installation ID
-    privateKey          String? // Encrypted private key
-    personalAccessToken String? // Personal Access Token (encrypted)
-    repositoryOwner     String
-    repositoryName      String
-    defaultLabels       String[] @default([])
-    defaultAssignees    String[] @default([])
-    webhookSecret       String?
-    webhookId           Int? // GitHub webhook ID
-    createdAt           DateTime @default(now())
-    updatedAt           DateTime @updatedAt
+    id               String   @id @default(cuid())
+    projectId        String   @unique
+    appId            String? // GitHub App ID
+    installationId   String? // GitHub App Installation ID
+    repositoryOwner  String
+    repositoryName   String
+    defaultLabels    String[] @default([])
+    defaultAssignees String[] @default([])
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
 
     // Relations
     project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)

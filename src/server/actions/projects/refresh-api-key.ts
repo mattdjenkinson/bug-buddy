@@ -38,8 +38,7 @@ export async function refreshApiKey(data: z.infer<typeof refreshApiKeySchema>) {
       },
     });
 
-    revalidatePath("/dashboard/settings", "layout");
-    revalidatePath("/dashboard/projects", "layout");
+    revalidatePath(`/dashboard/${project.slug}/settings`, "page");
 
     return {
       success: true,

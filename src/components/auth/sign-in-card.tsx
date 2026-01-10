@@ -13,7 +13,7 @@ import { AlertCircle, Github } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
 import posthog from "posthog-js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HexagonIconNegative } from "../icon";
 import { Alert, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
@@ -50,8 +50,14 @@ export function SignInCard() {
   const [error] = useQueryState("error");
   const [errorDescription] = useQueryState("error_description");
   const errorMessage = error ? `${error}: ${errorDescription || ""}` : null;
-  const wasGithubLastUsed = authClient.isLastUsedLoginMethod("github");
-  const wasGoogleLastUsed = authClient.isLastUsedLoginMethod("google");
+  // Avoid hydration mismatch: last-used provider is stored client-side.
+  const [wasGithubLastUsed, setWasGithubLastUsed] = useState(false);
+  const [wasGoogleLastUsed, setWasGoogleLastUsed] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setWasGithubLastUsed(authClient.isLastUsedLoginMethod("github"));
+    setWasGoogleLastUsed(authClient.isLastUsedLoginMethod("google"));
+  }, []);
   const isLoading = loadingProvider !== null;
 
   return (

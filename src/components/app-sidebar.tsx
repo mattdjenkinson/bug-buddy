@@ -2,7 +2,6 @@
 
 import {
   BarChart3,
-  Folder,
   LayoutDashboard,
   MessageSquare,
   Settings2,
@@ -11,6 +10,7 @@ import {
 import * as React from "react";
 
 import { useSession } from "@/components/auth/session-provider";
+import { useProject } from "@/components/dashboard/project-context";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -27,32 +27,32 @@ import { HexagonIconNegative } from "./icon";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useSession();
+  const { currentProjectSlug } = useProject();
   const isAdmin = user?.role === "admin";
+
+  const projectBase = currentProjectSlug
+    ? `/dashboard/${currentProjectSlug}`
+    : "/dashboard";
 
   const navItems = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: projectBase,
       icon: LayoutDashboard,
     },
     {
       title: "Feedback",
-      url: "/dashboard/feedback",
+      url: currentProjectSlug ? `${projectBase}/feedback` : "/dashboard",
       icon: MessageSquare,
     },
     {
-      title: "Projects",
-      url: "/dashboard/projects",
-      icon: Folder,
-    },
-    {
       title: "Analytics",
-      url: "/dashboard/analytics",
+      url: currentProjectSlug ? `${projectBase}/analytics` : "/dashboard",
       icon: BarChart3,
     },
     {
       title: "Settings",
-      url: "/dashboard/settings",
+      url: currentProjectSlug ? `${projectBase}/settings` : "/dashboard",
       icon: Settings2,
     },
     ...(isAdmin
@@ -72,9 +72,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <HexagonIconNegative className="w-6 h-6" />
-                </div>
+                <HexagonIconNegative className="w-6 h-6" />
+
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Bug Buddy</span>
                 </div>

@@ -10,23 +10,39 @@ import {
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import { useProject } from "./project-context";
 
-const routeMap: Record<string, { label: string; href: string }> = {
-  "/dashboard": { label: "Dashboard", href: "/dashboard" },
-  "/dashboard/projects": { label: "Projects", href: "/dashboard/projects" },
-  "/dashboard/feedback": { label: "Feedback", href: "/dashboard/feedback" },
-  "/dashboard/analytics": { label: "Analytics", href: "/dashboard/analytics" },
-  "/dashboard/settings": { label: "Settings", href: "/dashboard/settings" },
+const sectionLabels: Record<string, string> = {
+  feedback: "Feedback",
+  analytics: "Analytics",
+  settings: "Settings",
+  projects: "Projects",
+  account: "Account",
+  admin: "Admin",
 };
 
 export function DashboardBreadcrumb() {
   const pathname = usePathname();
+  const { currentProject } = useProject();
 
   // Build breadcrumb items based on the current path
   const buildBreadcrumbs = () => {
     const items: Array<{ label: string; href?: string }> = [];
 
-    // Always start with Dashboard
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments[0] !== "dashboard") {
+      return items;
+    }
+
+    const second = segments[1];
+    const isGlobalSection =
+      second === undefined ||
+      second === "projects" ||
+      second === "account" ||
+      second === "admin";
+
+    // Always start with the global dashboard entrypoint.
+    // (This route redirects to the last-selected project.)
     items.push({ label: "Dashboard", href: "/dashboard" });
 
     // If we're on the root dashboard, we're done
@@ -34,42 +50,50 @@ export function DashboardBreadcrumb() {
       return items;
     }
 
-    // Split the path and build breadcrumbs
-    const segments = pathname.split("/").filter(Boolean);
+    // Project-scoped routes look like /dashboard/<projectSlug>/...
+    if (!isGlobalSection && second) {
+      items.push({
+        label: currentProject?.name || second,
+        href: `/dashboard/${second}`,
+      });
 
-    // Skip the first segment (dashboard) since we already added it
-    for (let i = 1; i < segments.length; i++) {
-      const segment = segments[i];
-      const path = `/${segments.slice(0, i + 1).join("/")}`;
+      // Remaining segments after project slug
+      for (let i = 2; i < segments.length; i++) {
+        const segment = segments[i]!;
 
-      // Check if this is a known route
-      if (routeMap[path]) {
-        items.push({ label: routeMap[path].label, href: routeMap[path].href });
-      } else {
-        // For dynamic routes like [id], check if parent route exists
-        const parentPath = `/${segments.slice(0, i).join("/")}`;
-        const parentRoute = routeMap[parentPath];
-
-        // If parent exists and we haven't added it yet, add it
-        if (
-          parentRoute &&
-          !items.some((item) => item.href === parentRoute.href)
-        ) {
-          items.push({ label: parentRoute.label, href: parentRoute.href });
-        }
-
-        // Add the current segment (ID or dynamic value)
-        // Check if segment looks like an ID (long alphanumeric string)
-        const isId = /^[a-zA-Z0-9_-]+$/.test(segment) && segment.length > 10;
+        const isLast = i === segments.length - 1;
         const label =
-          isId && segment.length > 20
+          sectionLabels[segment] ||
+          (/^[a-zA-Z0-9_-]+$/.test(segment) && segment.length > 20
             ? `${segment.substring(0, 20)}...`
             : segment
                 .split("-")
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-        items.push({ label });
+                .join(" "));
+
+        const href = (() => {
+          // Link sections, not IDs.
+          if (segment === "feedback") return `/dashboard/${second}/feedback`;
+          if (segment === "analytics") return `/dashboard/${second}/analytics`;
+          if (segment === "settings") return `/dashboard/${second}/settings`;
+          return undefined;
+        })();
+
+        items.push({ label, href: !isLast ? href : undefined });
       }
+
+      return items;
+    }
+
+    // Global dashboard routes: /dashboard/new, /dashboard/account, /dashboard/admin, ...
+    for (let i = 1; i < segments.length; i++) {
+      const segment = segments[i]!;
+      const isLast = i === segments.length - 1;
+      const label = sectionLabels[segment] || segment;
+      const href = !isLast
+        ? `/${segments.slice(0, i + 1).join("/")}`
+        : undefined;
+      items.push({ label, href });
     }
 
     return items;

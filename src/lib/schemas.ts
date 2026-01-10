@@ -1,15 +1,71 @@
 import { z } from "zod";
 
+// Domain validation regex: matches valid domain names (e.g., example.com, subdomain.example.com)
+export const DOMAIN_REGEX =
+  /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
 // Project Schemas
 export const createProjectSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   description: z.string().optional(),
+  installationId: z.string().min(1, "GitHub App installation is required"),
   repository: z.string().min(1, "Repository is required"),
+  allowedDomains: z
+    .union([
+      z.string(),
+      z.array(
+        z
+          .string()
+          .regex(
+            DOMAIN_REGEX,
+            "Invalid domain format. Please use format like example.com",
+          ),
+      ),
+    ])
+    .optional()
+    .transform((value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return value
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean);
+    })
+    .pipe(
+      z.array(
+        z
+          .string()
+          .regex(
+            DOMAIN_REGEX,
+            "Invalid domain format. Please use format like example.com",
+          ),
+      ),
+    ),
+  defaultLabels: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return value
+        .split(",")
+        .map((l) => l.trim())
+        .filter(Boolean);
+    })
+    .pipe(z.array(z.string())),
+  defaultAssignees: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return value
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean);
+    })
+    .pipe(z.array(z.string())),
 });
-
-// Domain validation regex: matches valid domain names (e.g., example.com, subdomain.example.com)
-export const DOMAIN_REGEX =
-  /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 
 export const updateProjectSchema = z.object({
   projectId: z.string(),
@@ -37,7 +93,6 @@ export const refreshApiKeySchema = z.object({
 // GitHub Integration Schemas
 export const githubIntegrationSchema = z.object({
   projectId: z.string(),
-  personalAccessToken: z.string().optional(),
   repositoryOwner: z.string(),
   repositoryName: z.string(),
   defaultLabels: z.array(z.string()).optional(),
@@ -47,14 +102,9 @@ export const githubIntegrationSchema = z.object({
 // Client-side GitHub integration form schema (uses repository as "owner/repo" string)
 export const githubIntegrationFormSchema = z.object({
   projectId: z.string(),
-  personalAccessToken: z.string().optional(),
   repository: z.string().min(1, "Repository is required"),
   defaultLabels: z.string().optional(),
   defaultAssignees: z.string().optional(),
-});
-
-export const generateWebhookSecretSchema = z.object({
-  projectId: z.string(),
 });
 
 // Widget Customization Schemas

@@ -32,6 +32,7 @@ export async function getNotifications(options?: {
                   select: {
                     id: true,
                     name: true,
+                    slug: true,
                   },
                 },
               },

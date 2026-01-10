@@ -41,6 +41,12 @@ A feedback widget system that captures screenshots, allows annotations, and auto
    GOOGLE_CLIENT_ID="your-google-client-id"
    GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
+   # GitHub App (for creating issues as BugBuddy)
+   GITHUB_APP_ID="123456"
+   GITHUB_APP_SLUG="bug-buddy"
+   GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\\n"
+   GITHUB_APP_WEBHOOK_SECRET="your-webhook-secret"
+
    # PostHog (optional)
    NEXT_PUBLIC_POSTHOG_KEY=""
    NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
@@ -109,38 +115,29 @@ A feedback widget system that captures screenshots, allows annotations, and auto
 
 **Note**: Users can sign in with Google and then link their GitHub account in the account settings to enable GitHub integration features. The account linking uses the same callback URL but with a special parameter to avoid changing the user's login method.
 
-## GitHub Webhook Setup
+## GitHub App Setup (Recommended)
 
-The webhook allows Bug Buddy to sync GitHub issue status changes and comments back to your dashboard.
+Using a GitHub App lets Bug Buddy create issues **as the app** (not as each user) and receive webhook events for issue/comment sync.
 
-### Setting up the Webhook
+### Create the GitHub App
 
-1. **Go to your GitHub repository:**
-   - Navigate to the repository where issues are created
-   - Go to Settings > Webhooks
-
-2. **Add a new webhook:**
-   - Click "Add webhook"
-   - **Payload URL:**
+1. In GitHub, go to **Settings → Developer settings → GitHub Apps** and create a new app.
+2. **Webhook**:
+   - **Webhook URL**:
      - Development: `http://localhost:3000/api/github/webhook`
      - Production: `https://yourdomain.com/api/github/webhook`
-   - **Content type:** `application/json`
-   - **Events:** Select "Let me select individual events" and choose:
+   - **Webhook secret**: set this to `GITHUB_APP_WEBHOOK_SECRET`.
+   - Subscribe to events:
      - ✅ Issues
-     - ✅ Issue comments
-   - **Active:** ✅ (checked)
-   - Click "Add webhook"
+     - ✅ Issue comment
+3. **Permissions** (minimum):
+   - **Issues**: Read & write
+   - **Metadata**: Read-only
+4. Install the app on the repositories you want Bug Buddy to create issues in.
 
-3. **Verify webhook is working:**
-   - After creating the webhook, GitHub will send a test ping
-   - You should see it in the webhook's "Recent Deliveries" section
-   - When you close or comment on an issue in GitHub, the status will automatically sync to Bug Buddy
+### Notes
 
-### What the Webhook Does
-
-- **Issue State Changes:** When an issue is closed or reopened in GitHub, the feedback status is updated in Bug Buddy
-- **Comments:** New comments on GitHub issues are synced to Bug Buddy as activity
-- **Bidirectional Sync:** Keeps your Bug Buddy dashboard in sync with GitHub
+- Users can still connect GitHub OAuth for **repository browsing** in the UI, but issue creation uses the GitHub App installation token.
 
 ## Usage
 
