@@ -33,6 +33,7 @@ import {
   Ban,
   CheckCircle2,
   Github,
+  Trash2,
   Unlock,
   Users,
   XCircle,
@@ -71,6 +72,8 @@ export function AdminUsersTable() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isAccountsDialogOpen, setIsAccountsDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -161,6 +164,26 @@ export function AdminUsersTable() {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const { deleteUserAsAdmin } =
+        await import("@/server/actions/admin.actions");
+      return deleteUserAsAdmin(userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-users-github-status"],
+      });
+      toast.success("User deleted");
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to delete user: " + error.message);
+    },
+  });
+
   const { data: userAccountsData } = useQuery({
     queryKey: ["admin-user-accounts", selectedUser?.id],
     queryFn: async () => {
@@ -192,6 +215,11 @@ export function AdminUsersTable() {
   const handleViewAccounts = (user: User) => {
     setSelectedUser(user);
     setIsAccountsDialogOpen(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
   };
 
   const users = usersData?.users || [];
@@ -324,6 +352,14 @@ export function AdminUsersTable() {
                           <Users className="h-4 w-4 mr-1" />
                           Accounts
                         </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
                         {user.banned ? (
                           <Button
                             variant="outline"
@@ -401,6 +437,43 @@ export function AdminUsersTable() {
                 No linked accounts found
               </p>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete user</DialogTitle>
+            <DialogDescription>
+              This will permanently delete{" "}
+              <span className="font-medium">{userToDelete?.email}</span> and all
+              associated data (projects, feedback, issues, sessions, etc.). This
+              action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }}
+              disabled={deleteUserMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              loading={deleteUserMutation.isPending}
+              disabled={!userToDelete}
+              onClick={() => {
+                if (!userToDelete) return;
+                deleteUserMutation.mutate(userToDelete.id);
+              }}
+            >
+              Delete user
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

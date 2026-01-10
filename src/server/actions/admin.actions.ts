@@ -128,3 +128,26 @@ export async function getUsersGitHubStatus(userIds: string[]) {
 
   return statusMap;
 }
+
+export async function deleteUserAsAdmin(userId: string) {
+  const session = await getSession();
+
+  if (!session?.user || session.user.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  // Prevent an admin from deleting themselves from this UI.
+  if (session.user.id === userId) {
+    throw new Error("You cannot delete your own user");
+  }
+
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+
+  return { success: true as const };
+}
