@@ -101,44 +101,28 @@ export async function getUsersGitHubStatus(userIds: string[]) {
     throw new Error("Unauthorized");
   }
 
-  // Get GitHub accounts for all users
-  const githubAccounts = await prisma.account.findMany({
+  // A user is considered to have "GitHub App installed" if any of their projects
+  // has a GitHub App installationId saved on its GitHub integration.
+  const integrationsWithInstall = await prisma.gitHubIntegration.findMany({
     where: {
-      userId: { in: userIds },
-      providerId: "github",
+      installationId: { not: null },
+      project: { userId: { in: userIds } },
     },
     select: {
-      userId: true,
+      project: { select: { userId: true } },
     },
   });
 
-  const usersWithGitHub = new Set(githubAccounts.map((acc) => acc.userId));
-
-  // Get projects with GitHub integrations that have webhooks
-  const projectsWithWebhooks = await prisma.project.findMany({
-    where: {
-      userId: { in: userIds },
-      githubIntegration: {
-        webhookId: { not: null },
-      },
-    },
-    select: {
-      userId: true,
-    },
-  });
-
-  const usersWithWebhooks = new Set(
-    projectsWithWebhooks.map((project) => project.userId),
+  const usersWithGitHubAppInstalled = new Set(
+    integrationsWithInstall.map((i) => i.project.userId),
   );
 
-  // Return a map of userId -> { hasGitHub: boolean, hasWebhook: boolean }
-  const statusMap: Record<string, { hasGitHub: boolean; hasWebhook: boolean }> =
-    {};
+  // Return a map of userId -> { hasGitHubAppInstalled: boolean }
+  const statusMap: Record<string, { hasGitHubAppInstalled: boolean }> = {};
 
   userIds.forEach((userId) => {
     statusMap[userId] = {
-      hasGitHub: usersWithGitHub.has(userId),
-      hasWebhook: usersWithWebhooks.has(userId),
+      hasGitHubAppInstalled: usersWithGitHubAppInstalled.has(userId),
     };
   });
 

@@ -252,7 +252,8 @@ export function AdminUsersTable() {
             ) : (
               users.map((user) => {
                 const githubStatus = githubStatusData?.[user.id];
-                const hasGitHub = githubStatus?.hasGitHub ?? false;
+                const hasGitHubAppInstalled =
+                  githubStatus?.hasGitHubAppInstalled ?? false;
 
                 return (
                   <TableRow key={user.id}>
@@ -297,7 +298,7 @@ export function AdminUsersTable() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        {hasGitHub ? (
+                        {hasGitHubAppInstalled ? (
                           <>
                             <Github className="h-4 w-4 text-green-600" />
                             <CheckCircle2 className="h-3 w-3 text-green-600" />
