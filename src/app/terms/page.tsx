@@ -34,6 +34,7 @@ export default function TermsPage() {
                 agreement. If you do not agree to abide by the above, please do
                 not use this service.
               </p>
+              <p>The Service is operated from the United Kingdom.</p>
             </section>
 
             <section>
@@ -274,8 +275,13 @@ export default function TermsPage() {
               </h2>
               <p>
                 These Terms of Service shall be governed by and construed in
-                accordance with the laws of the jurisdiction in which Bug Buddy
-                operates, without regard to its conflict of law provisions.
+                accordance with the laws of England and Wales, without regard to
+                its conflict of law provisions.
+              </p>
+              <p>
+                The courts of England and Wales shall have exclusive
+                jurisdiction to settle any dispute arising out of or in
+                connection with these Terms or the Service.
               </p>
             </section>
 

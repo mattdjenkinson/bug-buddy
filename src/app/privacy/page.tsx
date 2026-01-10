@@ -35,6 +35,11 @@ export default function PrivacyPage() {
                 information when you use our feedback widget system and related
                 services (the &quot;Service&quot;).
               </p>
+              <p>
+                We are based in the United Kingdom, and we store and process
+                personal data for the Service in the United Kingdom as described
+                below.
+              </p>
             </section>
 
             <section>
@@ -215,9 +220,10 @@ export default function PrivacyPage() {
                 5.1 Data Storage
               </h3>
               <p>
-                Your data is stored on secure servers and cloud infrastructure.
-                We use industry-standard security measures to protect your
-                information, including encryption in transit and at rest.
+                Your data is stored and processed on secure servers and cloud
+                infrastructure located in the United Kingdom. We use
+                industry-standard security measures to protect your information,
+                including encryption in transit and at rest.
               </p>
 
               <h3 className="text-xl font-semibold mt-4 mb-2">
@@ -283,13 +289,15 @@ export default function PrivacyPage() {
               </p>
 
               <h3 className="text-xl font-semibold mt-4 mb-2">
-                6.5 GDPR and CCPA Rights
+                6.5 UK GDPR, GDPR, and other rights
               </h3>
               <p>
-                If you are located in the European Economic Area (EEA) or
-                California, you may have additional rights under the General
-                Data Protection Regulation (GDPR) or California Consumer Privacy
-                Act (CCPA), including:
+                If you are located in the United Kingdom or the European
+                Economic Area (EEA), you may have additional rights under the UK
+                GDPR (and, where applicable, the EU GDPR) and related data
+                protection laws. If you are located in California, you may have
+                additional rights under the California Consumer Privacy Act
+                (CCPA). These may include:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>The right to access your personal data</li>
@@ -339,11 +347,14 @@ export default function PrivacyPage() {
                 9. International Data Transfers
               </h2>
               <p>
-                Your information may be transferred to and processed in
-                countries other than your country of residence. These countries
-                may have data protection laws that differ from those in your
-                country. By using the Service, you consent to the transfer of
-                your information to these countries.
+                We store and process personal data for the Service in the United
+                Kingdom. In limited cases, your information may be transferred
+                to or processed in other countries (for example, when you choose
+                to use third-party integrations such as GitHub or Google, or
+                where a third-party service provider processes data on our
+                behalf). Where we transfer personal data outside the United
+                Kingdom, we take steps to ensure appropriate safeguards are in
+                place in accordance with applicable data protection laws.
               </p>
             </section>
 
